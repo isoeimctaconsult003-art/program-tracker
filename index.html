@@ -116,6 +116,15 @@ nav a.on{background:rgba(255,255,255,.14);border-left-color:var(--pa);color:#fff
  .sk{grid-template-columns:1fr 1fr}.sk b{font-size:22px}
  .gc b{font-size:28px}
 }
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--bd);margin:4px 0 14px}
+button.tb{background:none;color:var(--mu);border:0;border-bottom:3px solid transparent;border-radius:0;margin:0;padding:9px 16px;font-weight:600}
+button.tb.on{color:var(--mar);border-bottom-color:var(--pa)}button.tb:hover{filter:none;color:var(--mar)}
+.tt td{vertical-align:top;white-space:normal}
+.tt input,.tt textarea{width:100%;min-width:130px;font:inherit;border:1px solid var(--bd);border-radius:8px;padding:7px 9px;background:#fff;color:var(--tx)}
+.tt textarea{min-width:220px;resize:vertical}.tt td:last-child{white-space:nowrap}
+.tt .sv{padding:7px 14px;margin:0 6px 0 0}.tt .dl{padding:7px 12px;margin:0}
+.tt tr.dirty td{background:#fff7ea!important}
+@media(max-width:700px){.tt tr.h{display:none}.tt tr{display:block;border:1px solid var(--bd);border-radius:10px;margin:0 0 12px;padding:10px}.tt td{display:block;border:0!important;padding:5px 0!important;background:none!important}.tt td[data-l]::before{content:attr(data-l);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:600;margin-bottom:2px}.tt td:last-child{display:flex;gap:8px}.tt tr.dirty{background:#fff7ea}.tt input,.tt textarea{min-width:0}}
 </style>
 <meta name="theme-color" content="#3b6b6e">
 
@@ -154,8 +163,9 @@ nav a.on{background:rgba(255,255,255,.14);border-left-color:var(--pa);color:#fff
     <p style="margin-top:0"><select id="sel" aria-label="Choose a program"></select></p>
     <div class="scroll"><table id="det"></table></div></section>
 <section id="sl"><h2>School lookup</h2>
-    <p style="margin-top:0;display:flex;gap:10px;flex-wrap:wrap"><select id="ssel" aria-label="Choose a school"></select><input id="ss" list="slist" placeholder="or type a school name to search…" autocomplete="off"><datalist id="slist"></datalist></p>
-    <div id="sres"></div></section>
+    <p style="margin-top:0;display:flex;gap:10px;flex-wrap:wrap"><select id="ssel" aria-label="Choose a school"></select><input id="ss" list="slist" autocomplete="off" style="display:none"><datalist id="slist"></datalist></p>
+    <div class="tabs"><button class="tb on" data-t="p">Progress</button><button class="tb" data-t="t">Target dates</button></div>
+    <div id="sres"></div><div id="tres" style="display:none"></div></section>
 </main>
 <footer>Program Track Sheet &middot; EIMCTA &middot; for Sustainable Improvement</footer>
 </div></div>
@@ -267,7 +277,9 @@ function renderPies(active){
 }
 
 let base;
-function schoolView(){
+let curSchool = "", lastSchool = null, tab = "p";
+function schoolView(){ curSchool = ""; schoolView0(); targetView(); }
+function schoolView0(){
   const q = $("ss").value.trim().toLowerCase(), out = $("sres"), m = new Map();
   programs.forEach(p => p.schools.forEach(s => { const k = s.name.toLowerCase(); if (!m.has(k)) m.set(k, s.name); }));
   const names = [...m.values()].sort((a, b) => a.localeCompare(b));
@@ -281,6 +293,7 @@ function schoolView(){
     if (mt.length === 1) hit = mt[0];
     else { out.innerHTML = mt.length ? '<p class="sub">Did you mean:</p>' + mt.slice(0, 10).map(n => `<button class="ghost" data-s="${esc(n)}">${esc(n)}</button>`).join("") : '<p class="sub">No school found with that name.</p>'; return; }
   }
+  curSchool = hit;
   const rows = programs.map(p => ({p, s: p.schools.find(x => x.name.toLowerCase() === hit.toLowerCase())})).filter(r => r.s);
   const done = rows.filter(r => r.s.sc === 1).length, prog = rows.filter(r => r.s.sc > 0 && r.s.sc < 1).length;
   const avg = rows.length ? rows.reduce((a, r) => a + r.s.sc, 0) / rows.length : 0;
@@ -350,6 +363,85 @@ function show(id){
 }
 document.querySelectorAll("nav a").forEach(a => a.onclick = e => { e.preventDefault(); show(a.getAttribute("href").slice(1)); });
 show(location.hash.slice(1));
+
+// ===== Target dates =====
+const isoToday = () => { const d = new Date(), z = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()); };
+function dueChip(c){
+  if (!c) return '<span class="chip">No closing date</span>';
+  const d = Math.round((new Date(c + "T00:00:00") - new Date(isoToday() + "T00:00:00")) / 864e5);
+  if (d === 0) return '<span class="chip" style="background:#c8423f;color:#fff">Closes today</span>';
+  if (d < 0) return '<span class="chip" style="background:#f3d4d2;color:#8a2a26">Closed ' + (-d) + ' day' + (d < -1 ? "s" : "") + ' ago</span>';
+  return '<span class="chip ' + (d <= 3 ? "pa" : "ok") + '">' + d + ' day' + (d > 1 ? "s" : "") + ' left</span>';
+}
+function rowHtml(t, dirty){
+  return `<tr data-id="${esc(t.id || "")}"${dirty ? ' class="dirty"' : ""}><td data-l="Program"><input class="tp" list="pdl" placeholder="Program name" value="${esc(t.program)}"></td>
+  <td data-l="Discussion"><textarea class="tdi" rows="2" placeholder="Discussion notes">${esc(t.discussion)}</textarea></td>
+  <td data-l="Opening date"><input type="date" class="to" value="${esc(t.open)}"></td>
+  <td data-l="Closing date"><input type="date" class="tc" value="${esc(t.close)}"></td>
+  <td data-l="Status" class="ts">${dueChip(t.close)}</td>
+  <td data-l=""><button class="sv">Save</button><button class="ghost dl">Delete</button></td></tr>`;
+}
+const tmsg = (t, ok) => { const m = $("tmsg"); if (m) { m.textContent = t; m.style.color = ok ? "#2f9e77" : "#c8423f"; } };
+function targetView(){
+  const out = $("tres");
+  if (!curSchool) { out.innerHTML = $("ss").value.trim() ? $("sres").innerHTML : '<p class="sub">Select a school above to view or add its target dates.</p>'; lastSchool = null; return; }
+  if (out.querySelector("tr.dirty") && lastSchool === curSchool) return; // don't wipe unsaved typing on auto-refresh
+  lastSchool = curSchool;
+  const list = (DATA.__targets || []).filter(t => t.school.toLowerCase() === curSchool.toLowerCase());
+  out.innerHTML = `<h3 style="margin:0 0 10px;color:var(--mar)">${esc(curSchool)}: target dates</h3>
+    <datalist id="pdl">${programs.map(p => `<option value="${esc(p.name)}">`).join("")}</datalist>
+    <div class="scroll"><table class="tt"><tr class="h"><th>Program</th><th>Discussion</th><th>Opening date</th><th>Closing date</th><th>Status</th><th></th></tr>${list.map(t => rowHtml(t)).join("")}</table></div>
+    <p><button class="ghost" id="tadd" style="margin:0">+ Add new target date</button> <span class="sub" id="tmsg"></span></p>
+    ${list.length ? "" : '<p class="sub">No target dates saved for this school yet. Click "+ Add new target date".</p>'}`;
+}
+async function post(payload){
+  let key = ""; try { key = localStorage.getItem("tk_key") || ""; } catch (e) {}
+  if (!key) key = prompt("Enter the edit code to save changes:") || "";
+  if (!key) return {ok: false, error: "No edit code entered"};
+  try {
+    const r = await fetch(API_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({...payload, key})});
+    const j = await r.json();
+    try { if (j.ok) localStorage.setItem("tk_key", key); else if (/code/i.test(j.error || "")) localStorage.removeItem("tk_key"); } catch (e) {}
+    return j;
+  } catch (e) { return {ok: false, error: "Could not save. Check that the new Apps Script is deployed (" + e.message + ")"}; }
+}
+async function saveRow(tr){
+  const q = c => tr.querySelector(c).value.trim();
+  const row = {id: tr.dataset.id || "", school: curSchool, program: q(".tp"), discussion: q(".tdi"), open: q(".to"), close: q(".tc")};
+  if (!row.program) return tmsg("Please enter the program name.", false);
+  if (row.open && row.close && row.close < row.open) return tmsg("Closing date cannot be before the opening date.", false);
+  tmsg("Saving…", true);
+  const j = await post({action: "save", row});
+  if (!j.ok) return tmsg(j.error || "Save failed", false);
+  row.id = j.id; tr.dataset.id = j.id; tr.classList.remove("dirty");
+  tr.querySelector(".ts").innerHTML = dueChip(row.close);
+  const arr = DATA.__targets = DATA.__targets || [], i = arr.findIndex(x => x.id === row.id);
+  if (i >= 0) arr[i] = row; else arr.push(row);
+  tmsg("Saved ✓", true);
+}
+async function deleteRow(tr){
+  const id = tr.dataset.id;
+  if (!id) { tr.remove(); return; }
+  if (!confirm("Delete this target date?")) return;
+  const j = await post({action: "delete", id});
+  if (!j.ok) return tmsg(j.error || "Delete failed", false);
+  DATA.__targets = (DATA.__targets || []).filter(x => x.id !== id); tr.remove(); tmsg("Deleted", true);
+}
+function setTab(t){
+  tab = t;
+  $("sres").style.display = t === "p" ? "" : "none"; $("tres").style.display = t === "t" ? "" : "none";
+  document.querySelectorAll(".tb").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+}
+document.querySelectorAll(".tb").forEach(b => b.onclick = () => setTab(b.dataset.t));
+$("tres").oninput = e => { const tr = e.target.closest("tr"); if (tr && tr.dataset.id !== undefined) { tr.classList.add("dirty"); } };
+$("tres").onclick = e => {
+  const b = e.target.closest("[data-s]"); if (b) { $("ss").value = b.dataset.s; schoolView(); return; }
+  const tr = e.target.closest("tr");
+  if (e.target.closest(".sv")) saveRow(tr);
+  else if (e.target.closest(".dl")) deleteRow(tr);
+  else if (e.target.closest("#tadd")) { $("tres").querySelector("table").insertAdjacentHTML("beforeend", rowHtml({}, true)); $("tres").querySelector("tr:last-child .tp").focus(); }
+};
+
 $("rf").onclick = load;
 $("sel").onchange = detail;
 load();
