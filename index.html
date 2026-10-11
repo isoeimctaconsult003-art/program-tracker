@@ -152,6 +152,8 @@ details.ms summary::after{content:"▾";float:right;color:var(--mu)}
 .acts{display:flex;gap:10px;margin-top:14px}.acts button{margin:0;flex:1}
 #cday td{white-space:normal;vertical-align:top}
 @media(max-width:600px){.two{grid-template-columns:1fr}}
+a.ghost{display:inline-block;padding:8px 14px;border:1px solid var(--mar);border-radius:8px;color:var(--mar);text-decoration:none;background:#fff;margin:0 6px 0 0;font-weight:500}
+a.ghost:hover{background:#f7eeee}
 </style>
 <meta name="theme-color" content="#3b6b6e">
 
@@ -511,7 +513,7 @@ function dayPanel(items){
   let h = `<h3 style="margin:18px 0 8px;color:var(--mar)">${esc(fmt(calSel))} · ${n ? '<span style="color:#c8423f">Busy (' + n + ')</span>' : '<span style="color:#2f9e77">Free</span>'}${c ? " · " + esc(c) : br ? " · " + esc(br) + " branch" : ""}</h3>`;
   if (calSel >= isoToday()) h += '<p style="margin:0 0 6px"><button id="cbook" style="margin:0">+ Book a schedule</button></p>';
   if (bk.length) h += sh("Booked schedules") + '<div class="scroll"><table><tr><th>Shift / time</th><th>School</th><th>Consultant</th><th>Agenda</th><th>Sub programs / service</th><th>Resources</th><th>Participation</th><th>Status</th><th></th></tr>' +
-    bk.map(b => `<tr><td><b>${esc(b.shift)}</b><br>${esc(b.time)}</td><td>${esc(b.school)}</td><td>${esc(b.consultant)}</td><td>${esc((b.programs || []).join(", "))}</td><td>${short(b.subs)}</td><td>${esc(b.resources) || "–"}</td><td>${esc((b.participation || []).join(", ")) || "–"}</td><td><span class="chip" style="${b.status === "Done" ? "background:#2f9e77;color:#fff" : "background:#ffe69a;color:#6b5200"}">${b.status === "Done" ? "Done" : "Booked"}</span></td><td style="white-space:nowrap"><button class="ghost" data-st="${esc(b.id)}" data-to="${b.status === "Done" ? "Booked" : "Done"}" style="margin:0 6px 0 0">${b.status === "Done" ? "Reopen" : "Mark done"}</button><button class="ghost" data-del="${esc(b.id)}" style="margin:0">Delete</button></td></tr>`).join("") + "</table></div>";
+    bk.map(b => `<tr><td><b>${esc(b.shift)}</b><br>${esc(b.time)}</td><td>${esc(b.school)}</td><td>${esc(b.consultant)}</td><td>${esc((b.programs || []).join(", "))}</td><td>${short(b.subs)}</td><td>${esc(b.resources) || "–"}</td><td>${esc((b.participation || []).join(", ")) || "–"}</td><td><span class="chip" style="${b.status === "Done" ? "background:#2f9e77;color:#fff" : "background:#ffe69a;color:#6b5200"}">${b.status === "Done" ? "Done" : "Booked"}</span></td><td style="white-space:nowrap">${b.invite ? `<a class="ghost" href="${esc(b.invite)}" target="_blank" rel="noopener">Invitation</a>` : `<button class="ghost" data-inv="${esc(b.id)}" style="margin:0 6px 0 0">Make invitation</button>`}<button class="ghost" data-st="${esc(b.id)}" data-to="${b.status === "Done" ? "Booked" : "Done"}" style="margin:0 6px 0 0">${b.status === "Done" ? "Reopen" : "Mark done"}</button><button class="ghost" data-del="${esc(b.id)}" style="margin:0">Delete</button></td></tr>`).join("") + "</table></div>";
   if (ev.length) h += sh("Target dates") + '<div class="scroll"><table><tr><th>School</th><th>Program</th><th>Consultant</th><th>Type</th><th>Discussion</th><th>Dates</th></tr>' +
     ev.map(e => `<tr><td>${esc(e.t.school)}</td><td>${esc(e.t.program)}</td><td>${esc(e.t.cons)}</td><td><span class="chip" style="${kl[e.k][1]}">${kl[e.k][0]}</span></td><td style="min-width:180px;max-width:320px">${esc(e.t.discussion) || "–"}</td><td>${esc(e.t.open) || "–"} → ${esc(e.t.close) || "–"}</td></tr>`).join("") + "</table></div>";
   if (!n) h += '<p class="sub">Nothing scheduled on this day for this selection.</p>';
@@ -580,7 +582,8 @@ function openBook(date){
     <div class="fl"><span>1. Agenda (programs)</span>${msBox("f_ag", "Select programs…")}</div>
     <div class="fl"><span>2. Sub programs / service</span>${msBox("f_sub", "Select sub programs…")}</div>
         <div class="two"><div class="fl"><span>Shift</span><select id="f_shift"><option>First shift</option><option>Second shift</option></select></div>
-      <div class="fl"><span>3. Time</span><input id="f_time" placeholder="e.g. 10:00 AM - 12:00 PM"></div></div>
+      <div class="fl"><span>3. Time</span><input id="f_time" placeholder="e.g. Starts at 01:30 PM"></div></div>
+    <div class="fl"><span>Nepali date (BS) for the invitation</span><input id="f_bs" placeholder="e.g. Ashoj 23, 2083 (leave empty to use the English date)"></div>
     <div class="fl"><span>4. Resources</span><textarea id="f_res" rows="2" placeholder="Type the resources needed"></textarea></div>
     <div class="fl"><span>5. Participation</span>${msBox("f_pa", "Select participants…")}<input id="f_oth" placeholder="If you choose Others, type here" style="margin-top:8px"></div>
     <div class="fl"><span>6. Name of consultant</span><select id="f_cons"><option value="">Select consultant…</option>${cons}</select></div>
@@ -608,7 +611,7 @@ $("bkf").addEventListener("click", async e => {
   if (!e.target.closest("#f_save")) return;
   const msg = (t, ok) => { $("f_msg").textContent = t; $("f_msg").style.color = ok ? "#2f9e77" : "#c8423f"; };
   const oth = $("f_oth").value.trim();
-  const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), school: $("f_school").value, consultant: $("f_cons").value,
+  const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), bs: $("f_bs").value.trim(), school: $("f_school").value, consultant: $("f_cons").value,
     programs: msVals("f_ag"), subs: msVals("f_sub"), services: [], status: "Booked", resources: $("f_res").value.trim(),
     participation: msVals("f_pa").map(v => v === "Others" && oth ? "Others: " + oth : v)};
   if (!b.school) return msg("Please choose a school.");
@@ -619,12 +622,21 @@ $("bkf").addEventListener("click", async e => {
   msg("Booking…", true);
   const j = await post({action: "saveSchedule", row: b});
   if (!j.ok) return msg(j.error || "Could not book. Please try again.");
-  b.id = j.id; (DATA.__schedules = DATA.__schedules || []).push(b);
+  b.id = j.id; b.invite = j.invite || ""; (DATA.__schedules = DATA.__schedules || []).push(b);
+  if (j.invite_error) alert("Booked, but the invitation could not be created yet: " + j.invite_error);
   $("bk").close(); calendarView();
 });
 $("bk").addEventListener("click", e => { if (e.target === $("bk")) $("bk").close(); });
 $("cday").onclick = async e => {
   if (e.target.closest("#cbook")) { openBook(calSel); return; }
+  const iv = e.target.closest("[data-inv]");
+  if (iv) {
+    iv.textContent = "Creating…";
+    const j = await post({action: "makeInvitation", id: iv.dataset.inv});
+    if (!j.ok) { alert(j.error || "Could not create the invitation."); calendarView(); return; }
+    const b = (DATA.__schedules || []).find(x => x.id === iv.dataset.inv); if (b) b.invite = j.invite;
+    calendarView(); return;
+  }
   const st = e.target.closest("[data-st]");
   if (st) {
     const j = await post({action: "setScheduleStatus", id: st.dataset.st, status: st.dataset.to});
