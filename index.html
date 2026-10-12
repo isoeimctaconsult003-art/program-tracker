@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
 <title>Program Track Sheet by EIMCTA</title>
 <style>
-:root{--bg:#eef1f6;--card:#fff;--tx:#1b2433;--mu:#6b7280;--bd:#e4e8f0;--ok:#4f6db0;--pa:#f0893a;--no:#e4e8f0;--mar:#5c252b;--sh:0 1px 2px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.06)}
+:root{--bg:#e4e8f4;--card:rgba(255,255,255,.7);--tx:#1f1b3d;--mu:#7b789a;--bd:#e7e4f3;--ok:#9a79df;--pa:#ee8f6e;--no:#e6e3f2;--mar:#26215c;--sh:0 10px 30px rgba(110,100,170,.10)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--tx);font:14.5px/1.55 Inter,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 .app{display:flex;min-height:100vh}
@@ -14,9 +14,9 @@ aside{width:252px;flex:none;background:linear-gradient(185deg,#3b1217,#5c252b 70
 .logo{background:#fff;border-radius:12px;padding:10px;margin-bottom:18px}.logo img{width:100%;display:block}
 .ttl{font-weight:700;font-size:17px;line-height:1.3}.ttl small{display:block;color:#f6b27a;font-weight:500;font-size:12.5px;margin-top:3px}
 nav{margin:24px 0;display:flex;flex-direction:column;gap:4px}
-nav a{color:#e9d9da;text-decoration:none;padding:10px 12px;border-radius:8px;font-weight:500;font-size:13.5px;border-left:3px solid transparent;transition:.15s}
+nav a{color:#e3dffa;text-decoration:none;padding:10px 12px;border-radius:8px;font-weight:500;font-size:13.5px;border-left:3px solid transparent;transition:.15s}
 nav a:hover{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--pa)}
-.live{margin-top:auto;font-size:12px;color:#e9d9da;display:flex;gap:10px;align-items:center}
+.live{margin-top:auto;font-size:12px;color:#e3dffa;display:flex;gap:10px;align-items:center}
 .live i{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.22);flex:none}
 .tag{font-size:11px;color:#c9a9ab;margin-top:12px}
 .content{flex:1;min-width:0}
@@ -25,7 +25,7 @@ h1{margin:0;font-size:27px;font-weight:700;letter-spacing:-.5px}
 .sub{color:var(--mu);font-size:13px}
 button,select{font:inherit;font-weight:500;border-radius:8px;padding:8px 16px;cursor:pointer;transition:.15s}
 button{background:var(--mar);color:#fff;border:1px solid var(--mar);margin-left:8px}button:hover{filter:brightness(1.18)}
-button.ghost{background:#fff;color:var(--mar)}button.ghost:hover{background:#f7eeee;filter:none}
+button.ghost{background:#fff;color:var(--mar)}button.ghost:hover{background:#efeafb;filter:none}
 select,input{background:#fff;color:var(--tx);border:1px solid var(--bd);min-width:250px;font:inherit;border-radius:8px;padding:8px 14px}
 input{min-width:320px}input:focus-visible{outline:2px solid var(--pa);outline-offset:2px}
 .ph{display:flex;align-items:center;gap:10px;margin:20px 0 8px;font-weight:700;color:var(--mar);font-size:14.5px}
@@ -153,12 +153,12 @@ details.ms summary::after{content:"▾";float:right;color:var(--mu)}
 #cday td{white-space:normal;vertical-align:top}
 @media(max-width:600px){.two{grid-template-columns:1fr}}
 a.ghost{display:inline-block;padding:8px 14px;border:1px solid var(--mar);border-radius:8px;color:var(--mar);text-decoration:none;background:#fff;margin:0 6px 0 0;font-weight:500}
-a.ghost:hover{background:#f7eeee}
-#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,#6d2f35,#3b1217 70%);color:#fff;transition:opacity .6s ease,visibility .6s}
+a.ghost:hover{background:#efeafb}
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,#6a5fc4,#26215c 70%);color:#fff;transition:opacity .6s ease,visibility .6s}
 #splash.hide{opacity:0;visibility:hidden}
 .sp-in{text-align:center;padding:24px;max-width:440px}
 .sp-ring{position:relative;width:200px;height:200px;margin:0 auto 22px;display:grid;place-items:center}
-.sp-ring::before,.sp-ring::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(240,137,58,.6);animation:ripple 2.4s ease-out infinite}
+.sp-ring::before,.sp-ring::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(238,143,110,.6);animation:ripple 2.4s ease-out infinite}
 .sp-ring::after{animation-delay:1.2s}
 .sp-ring img{width:150px;background:#fff;border-radius:18px;padding:10px;animation:pop .9s cubic-bezier(.2,1.4,.4,1) both,float 3.2s ease-in-out .9s infinite}
 @keyframes ripple{0%{transform:scale(.62);opacity:.9}100%{transform:scale(1.25);opacity:0}}
@@ -169,16 +169,64 @@ a.ghost:hover{background:#f7eeee}
 #splash h2{margin:0;font-size:25px;letter-spacing:-.3px;animation:fadeup .8s .3s both}
 .sp-by{color:#f6b27a;margin:4px 0 22px;font-size:13.5px;animation:fadeup .8s .5s both}
 .sp-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;width:240px;margin:0 auto 12px}
-.sp-bar i{display:block;height:100%;width:40%;border-radius:4px;background:linear-gradient(90deg,#f0893a,#4f6db0);animation:slide 1.3s ease-in-out infinite}
-#spMsg{margin:0 0 16px;color:#e9d9da;font-size:13px;min-height:20px}
+.sp-bar i{display:block;height:100%;width:40%;border-radius:4px;background:linear-gradient(90deg,#ee8f6e,#9a79df);animation:slide 1.3s ease-in-out infinite}
+#spMsg{margin:0 0 16px;color:#e3dffa;font-size:13px;min-height:20px}
 #spSnd{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:#fff;margin:0;padding:7px 14px;font-size:12.5px}
 #spSnd:hover{background:rgba(255,255,255,.22);filter:none}
 @media(prefers-reduced-motion:reduce){#splash *{animation:none!important}}
 @media print{#splash{display:none}}
 .sbtop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:-4px 0 10px}.sbtop p{margin:0}.sbtop select{min-width:200px}
 .chartwrap{position:relative;width:100%}
+
+/* ===== Glass dashboard look ===== */
+body{background:linear-gradient(135deg,#dde6f4 0%,#e7e2f5 50%,#d5d8ee 100%) fixed;font-family:Poppins,Inter,"Segoe UI",system-ui,sans-serif;font-size:13.5px;color:var(--tx)}
+.app{display:block;max-width:1280px;margin:22px auto;padding:20px;border-radius:38px;background:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.75);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 20px 60px rgba(100,90,160,.18);min-height:0}
+.topbar{display:flex;align-items:center;gap:18px;background:rgba(255,255,255,.8);border:1px solid #fff;border-radius:999px;padding:8px 20px 8px 10px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px}.brand img{height:42px;width:auto;border-radius:12px;background:#fff;display:block}
+.brand .ttl{font-size:14px;font-weight:600;line-height:1.2;color:var(--mar)}.brand .ttl small{display:block;font-size:11px;color:var(--pa);margin:0;font-weight:500}
+.topbar nav{display:flex;flex-direction:row;gap:2px;margin:0 auto}
+.topbar nav a{color:#5a577d;padding:9px 16px;border-radius:999px;border-left:0;font-size:13px;font-weight:500;background:none;transition:.15s}
+.topbar nav a:hover{background:#efeafb;color:var(--mar)}
+.topbar nav a.on{background:var(--mar);color:#fff}
+.topbar .live{margin:0;font-size:11.5px;color:var(--mu)}
+.top{padding:4px 6px 14px}.top h1{font-size:24px;font-weight:600;color:var(--mar);letter-spacing:-.3px}
+.acts2{display:flex;gap:8px;align-items:center}.acts2 button{margin:0}
+main{padding:0;max-width:none}
+button{border-radius:999px;font-weight:500}
+button.ghost{background:#fff;color:var(--mar);border:1px solid #e3def5}
+select,input{border-radius:14px;background:#fff;border:1px solid #e3def5}
+.card,section{background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);border-radius:26px;box-shadow:0 10px 30px rgba(110,100,170,.10)}
+th{background:rgba(238,234,250,.7)}
+tr:nth-child(even) td:not(.c){background:rgba(246,244,252,.7)}
+dialog{border-radius:26px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.pill{background:rgba(255,255,255,.8);border:1px solid #fff;border-radius:999px;padding:6px 14px;font-size:12.5px;color:var(--mu)}.pill b{color:var(--mar);font-size:14px;font-weight:600}.pill.soft{background:rgba(154,121,223,.14);color:#6a4fc0}
+.ovrow1{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;margin-bottom:18px}
+.ovrow2{display:grid;grid-template-columns:1.1fr 1.1fr .9fr;gap:18px}
+.ovrow1 section,.ovrow2 section{margin:0}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.hd h2{margin:0}.hd h2::before{display:none}
+.hd button{background:rgba(255,255,255,.85);color:var(--mar);border:1px solid #e3def5;padding:6px 14px;font-size:12px;margin:0}
+.focus{background:#fff!important}
+.fcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fc{border-radius:22px;padding:16px;cursor:pointer;display:flex;flex-direction:column;min-height:215px;transition:.2s}.fc:hover{transform:translateY(-3px)}
+.c1{background:#cfe3f9}.c2{background:#e5e2fb}.c3{background:#fdd7c8}
+.fchip{align-self:flex-start;background:#fff;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:500}
+.ft{font-size:20px;line-height:1.2;font-weight:500;margin:14px 0 4px;color:#1c1a3a}.ft small{font-size:11px;color:var(--mu);font-weight:400}
+.fs{font-size:12px;color:#55527a}
+.fa{display:flex;align-items:center;gap:6px;margin:12px 0 auto}.fcn{font-size:11.5px;color:#55527a}
+.fp{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12px;font-weight:600}.fp i{flex:1;height:4px;border-radius:3px;background:rgba(40,35,90,.15);overflow:hidden}.fp b{display:block;height:100%;background:#4a4580;border-radius:3px}
+.av{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;color:#fff;font-size:10.5px;font-weight:600;border:2px solid #fff;flex:none}
+.ringwrap{display:flex;align-items:center;gap:18px}
+.rleg{list-style:none;margin:0;padding:0;flex:1}.rleg li{display:flex;gap:10px;margin-bottom:16px}.rleg li i{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}.rleg span{display:block;font-size:12.5px;color:var(--mu)}.rleg b{font-size:26px;font-weight:500;color:var(--mar);line-height:1.1}
+.rcv{position:relative;width:210px;height:210px;flex:none}
+.rk2{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #ece9f6}.rk2:last-child{border:0}.rk2 .av{width:40px;height:40px;font-size:13px}.rk2 div{flex:1;min-width:0}.rk2 b{display:block;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rk2 small{color:var(--mu);font-size:12px}.pts{font-weight:600;color:var(--mar);font-size:13px}
+.trk{position:relative;height:215px}
+.sn{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ece9f6}.sn:last-child{border:0}.sn div{flex:1;min-width:0}.sn b{display:block;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sn small{color:var(--mu);font-size:11.5px}.snic{width:30px;height:30px;border-radius:50%;background:#e5e2fb;color:#6a4fc0;display:grid;place-items:center;font-size:12px;font-weight:600;flex:none}
+@media(max-width:1100px){.ovrow1,.ovrow2{grid-template-columns:1fr}}
+@media(max-width:900px){.app{margin:10px;padding:12px;border-radius:26px}.topbar{flex-wrap:wrap;border-radius:26px;padding:10px 14px}.topbar nav{order:3;width:100%;overflow-x:auto;margin:0;gap:6px}.topbar nav a{white-space:nowrap;background:rgba(255,255,255,.7);padding:8px 14px}.topbar nav a.on{background:var(--mar)}.topbar .live{margin-left:auto}.acts2{width:100%}.acts2 button{flex:1}}
+@media(max-width:700px){.fcards{grid-template-columns:1fr}.fc{min-height:0}.ringwrap{flex-direction:column}}
 </style>
-<meta name="theme-color" content="#3b6b6e">
+<meta name="theme-color" content="#26215c">
 
 </head>
 <body>
@@ -193,29 +241,32 @@ a.ghost:hover{background:#f7eeee}
   </div>
 </div>
 <div class="app">
-<aside>
-  <div class="logo"><img id="sbLogo" alt="EIMCTA logo"></div>
-  <div class="ttl">Program Track Sheet<small>by EIMCTA</small></div>
-  <nav><a href="#ov">Overview</a><a href="#pr">Programs &amp; schools</a><a href="#pi">Status breakdown</a><a href="#mx">Progress matrix</a><a href="#dt">Program detail</a><a href="#sl">School lookup</a><a href="#cal">Calendar</a></nav>
+<header class="topbar">
+  <div class="brand"><img id="sbLogo" alt="EIMCTA logo"><div class="ttl">Program Track Sheet<small>by EIMCTA</small></div></div>
+  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#mx">Matrix</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a></nav>
   <div class="live"><i></i><span id="upd">Loading data…</span></div>
-  <div class="tag">for Sustainable Improvement</div>
-</aside>
+</header>
 <div class="content">
-<div class="top"><div><h1>Program Overview</h1><div class="sub"><span id="today"></span><span class="mu2" id="upd2"></span></div></div>
-  <div><button class="ghost" onclick="window.print()">Print / PDF</button><button id="rf">Refresh now</button></div></div>
+<div class="top"><div><h1>Dashboard</h1><div class="sub"><span id="today"></span><span class="mu2" id="upd2"></span></div></div>
+  <div class="acts2"><button class="ghost" onclick="window.print()">Print / PDF</button><button class="ghost" id="rf">Refresh</button><button id="newbk">+ Book a schedule</button></div></div>
 <main>
   <div id="msg"></div>
-  <div class="kpis" id="ov">
-    <div class="card gcard"><div class="gw"><canvas id="gauge"></canvas><div class="gc"><b id="k1">–</b><span>complete</span></div></div>
-      <div><h3>Overall progress</h3><p id="gtxt">&nbsp;</p>
-      <div class="mini"><span><i style="background:#4f6db0"></i><b id="kd">0</b> done</span><span><i style="background:#f0893a"></i><b id="kp">0</b> partly</span><span><i style="background:#cfd5e0"></i><b id="kn">0</b> not started</span></div></div></div>
-    <div class="card kpi"><div class="ic" style="background:var(--ok)">&#9632;</div><div><span>Schools</span><b id="k2">–</b></div></div>
-    <div class="card kpi"><div class="ic" style="background:var(--pa)">&#9672;</div><div><span>Programs</span><b id="k3">–</b></div></div>
-    <div class="card kpi"><div class="ic" style="background:var(--mar)">&#10003;</div><div><span>Steps done</span><b id="k4">–</b><small id="kdelta" style="display:block;font-size:11px;color:var(--mu)"></small></div></div>
+  <div id="ov">
+    <div class="stats" id="stats"></div>
+    <div class="ovrow1">
+      <section class="focus"><div class="hd"><h2 id="ftitle">Today's schedule</h2><button data-go="cal">See all</button></div><div class="fcards" id="fcards"></div></section>
+      <section><div class="hd"><h2>Overall progress</h2><span class="sub" id="rtot"></span></div>
+        <div class="ringwrap"><ul class="rleg" id="rleg"></ul><div class="rcv"><canvas id="rring"></canvas></div></div></section>
+    </div>
+    <div class="ovrow2">
+      <section><div class="hd"><h2>School ranking</h2><button data-go="pr">See all</button></div><div id="rank"></div></section>
+      <section><div class="hd"><h2>Program tracker</h2><button data-go="pi">See all</button></div><div class="trk"><canvas id="trk"></canvas></div></section>
+      <section><div class="hd"><h2>Closing soon</h2><button data-go="cal">See all</button></div><div id="soon"></div></section>
+    </div>
   </div>
   <div class="g2" id="pr">
     <section><h2>Completion by program</h2><div class="list" id="plist"></div>
-      <div class="legend"><span><i style="background:#2f9e77"></i>70%+</span><span><i style="background:#f0893a"></i>35–69%</span><span><i style="background:#c8423f"></i>under 35%</span></div></section>
+      <div class="legend"><span><i style="background:#9a79df"></i>70%+</span><span><i style="background:#ee8f6e"></i>35–69%</span><span><i style="background:#8dbbf0"></i>under 35%</span></div></section>
     <section><h2>School leaderboard</h2><div class="list" id="sclist"></div></section>
   </div>
   <section id="pi"><h2>Status breakdown by school</h2>
@@ -233,7 +284,7 @@ a.ghost:hover{background:#f7eeee}
     <p class="sub" style="margin-top:-6px">Pick a consultant to see which days are busy. A day is busy when one of their target dates opens, is running, or closes. Click today or a coming date to book a schedule.</p>
     <div class="calbar"><select id="cb" aria-label="Branch"><option value="">All branches</option><option value="Kathmandu">Kathmandu branch</option><option value="Itahari">Itahari branch</option></select><select id="cc" aria-label="Consultant"></select><button class="ghost" id="cprev" aria-label="Previous month">‹</button><b id="cmon"></b><button class="ghost" id="cnext" aria-label="Next month">›</button><button class="ghost" id="ctod">Today</button></div>
     <div class="cal" id="cgrid"></div>
-    <div class="legend"><span><i style="background:#ffe69a;border:1px solid #e0b100"></i>Booked</span><span><i style="background:#bfe8cf;border:1px solid #2f9e77"></i>Done</span><span><i style="background:rgba(79,109,176,.25)"></i>Target date only</span><span><i style="background:#c8423f;border-radius:50%"></i>Closing date</span><span><i style="background:#4f6db0;border-radius:50%"></i>Opening date</span><span><i style="background:#fff;border:1px solid var(--bd)"></i>Free</span></div>
+    <div class="legend"><span><i style="background:#ffe69a;border:1px solid #e0b100"></i>Booked</span><span><i style="background:#bfe8cf;border:1px solid #2f9e77"></i>Done</span><span><i style="background:rgba(154,121,223,.25)"></i>Target date only</span><span><i style="background:#c8423f;border-radius:50%"></i>Closing date</span><span><i style="background:#9a79df;border-radius:50%"></i>Opening date</span><span><i style="background:#fff;border:1px solid var(--bd)"></i>Free</span></div>
     <div id="cday"></div></section>
 </main>
 <footer>Program Track Sheet &middot; EIMCTA &middot; for Sustainable Improvement</footer>
@@ -278,25 +329,17 @@ function build(){
 }
 
 let gauge;
-const rag = v => v >= .7 ? "#2f9e77" : v >= .35 ? "#f0893a" : "#c8423f";
+const rag = v => v >= .7 ? "#9a79df" : v >= .35 ? "#ee8f6e" : "#8dbbf0";
 function render(){
   Chart.defaults.font.family = 'Inter,"Segoe UI",sans-serif'; Chart.defaults.color = "#6b7280";
   const active = programs.filter(p => p.pct != null);
   const names = [...new Set(programs.flatMap(p => p.schools.map(s => s.name)))];
   const overall = active.length ? active.reduce((a, p) => a + p.pct, 0) / active.length : 0;
   const all = [0, 0, 0]; active.forEach(p => p.counts.forEach((v, i) => all[i] += v));
-  $("k1").textContent = pct(overall); $("k2").textContent = names.length; $("k3").textContent = active.length;
-  $("kd").textContent = all[0]; $("kp").textContent = all[1]; $("kn").textContent = all[2];
   if (base === undefined) { try { base = JSON.parse(localStorage.getItem("tk_prev") || "null"); } catch (e) { base = null; } }
   try { localStorage.setItem("tk_prev", JSON.stringify({d: all[0]})); } catch (e) {}
-  const dl = base && base.d != null ? all[0] - base.d : null, kd = $("kdelta");
-  kd.textContent = dl == null ? "First visit on this device" : dl > 0 ? "▲ " + dl + " steps done since your last visit" : dl < 0 ? "▼ " + (-dl) + " since your last visit" : "No change since your last visit";
-  kd.style.color = dl > 0 ? "#2f9e77" : "var(--mu)";
-  $("gtxt").textContent = "Across " + active.length + " programs and " + names.length + " schools";
-  if (gauge) gauge.destroy();
-  gauge = new Chart($("gauge"), {type: "doughnut",
-    data: {datasets: [{data: [overall, 1 - overall], backgroundColor: ["#4f6db0", "#e9edf4"], borderWidth: 0}]},
-    options: {cutout: "80%", plugins: {legend: {display: false}, tooltip: {enabled: false}}}});
+  const dl = base && base.d != null ? all[0] - base.d : null;
+  ovState = {active, names, overall, all, deltaTxt: dl == null ? "First visit on this device" : dl > 0 ? "▲ " + dl + " steps done since your last visit" : dl < 0 ? "▼ " + (-dl) + " since your last visit" : "No change since your last visit"};
   const bar = (v, extra) => `<div class="row">${extra}<div class="rb"><i style="width:${Math.round(v * 100)}%;background:${rag(v)}"></i></div><div class="rp">${pct(v)}</div></div>`;
   $("plist").innerHTML = [...active].sort((a, b) => b.pct - a.pct)
     .map(p => bar(p.pct, `<div class="rn" style="width:42%" title="${esc(p.name)}">${esc(p.name)}</div>`)).join("");
@@ -306,6 +349,7 @@ function render(){
     active.forEach(p => { const v = lookup[p.name + "|" + n]; if (v != null) { t += v; c++; } });
     return {n, v: c ? t / c : 0}; }).sort((a, b) => b.v - a.v);
   $("sclist").innerHTML = board.map((b, i) => bar(b.v, `<div class="rk">${i + 1}</div><div class="rn" title="${esc(b.n)}">${esc(b.n)}</div>`)).join("");
+  renderOverview(ovState, board);
   let h = "<tr><th>School</th>" + active.map(p => `<th title="${esc(p.name)}">${esc(p.name)}</th>`).join("") + "<th>Average</th></tr>";
   names.forEach(n => {
     let tot = 0, cnt = 0;
@@ -313,7 +357,7 @@ function render(){
       const v = lookup[p.name + "|" + n];
       if (v == null) return '<td class="c" style="color:var(--mu)">–</td>';
       tot += v; cnt++;
-      const bg = v === 0 ? "var(--no)" : `rgba(79,109,176,${0.18 + 0.72 * v})`;
+      const bg = v === 0 ? "var(--no)" : `rgba(154,121,223,${0.18 + 0.72 * v})`;
       return `<td class="c" style="background:${bg};color:${v > .55 ? "#fff" : "var(--tx)"}">${pct(v)}</td>`;
     }).join("");
     h += `<tr><td>${esc(n)}</td>${cells}<td class="c">${cnt ? pct(tot / cnt) : "–"}</td></tr>`;
@@ -334,7 +378,6 @@ function renderPies(active){
   pies.forEach(c => c.destroy()); pies = [];
   const all = [0, 0, 0];
   active.forEach(p => p.counts.forEach((v, i) => all[i] += v));
-  $("k4").textContent = all[0] + " / " + all.reduce((a, b) => a + b, 0);
   const m = new Map();
   active.forEach(p => p.schools.forEach(s => {
     const k = s.name.toLowerCase(); let e = m.get(k);
@@ -348,7 +391,7 @@ function renderPies(active){
   const ds = (label, i, color) => ({label, backgroundColor: color, borderRadius: 3, data: rows.map(r => pctMode ? Math.round(r.c[i] / tot(r) * 1000) / 10 : r.c[i])});
   pies.push(new Chart($("sbar"), {
     type: "bar",
-    data: {labels: rows.map(r => r.n), datasets: [ds("Done", 0, "#4f6db0"), ds("Partly done", 1, "#f0893a"), ds("Not started", 2, "#d9dee8")]},
+    data: {labels: rows.map(r => r.n), datasets: [ds("Done", 0, "#9a79df"), ds("Partly done", 1, "#ee8f6e"), ds("Not started", 2, "#8dbbf0")]},
     options: {
       indexAxis: "y", maintainAspectRatio: false,
       plugins: {
@@ -356,7 +399,7 @@ function renderPies(active){
         tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex], n = r.c[c.datasetIndex]; return c.dataset.label + ": " + n + " steps (" + Math.round(n / tot(r) * 100) + "%)"; }}}
       },
       scales: {
-        x: {stacked: true, max: pctMode ? 100 : undefined, grid: {color: "#eef0f4"}, title: {display: true, text: pctMode ? "Percent of steps" : "Number of steps"}, ticks: {callback: v => pctMode ? v + "%" : v}},
+        x: {stacked: true, max: pctMode ? 100 : undefined, grid: {color: "#ece9f6"}, title: {display: true, text: pctMode ? "Percent of steps" : "Number of steps"}, ticks: {callback: v => pctMode ? v + "%" : v}},
         y: {stacked: true, grid: {display: false}, ticks: {autoSkip: false, font: {size: 11}}}
       }
     }
@@ -440,7 +483,7 @@ $("today").textContent = new Date().toLocaleDateString(undefined, {weekday: "lon
 $("ssel").onchange = () => { $("ss").value = $("ssel").value; schoolView(); };
 $("ss").oninput = schoolView; $("ss").onchange = schoolView;
 $("sres").onclick = e => { const b = e.target.closest("[data-s]"); if (b) { $("ss").value = b.dataset.s; schoolView(); } };
-const VIEWS = {ov: "Program Overview", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar"};
+const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar"};
 function show(id){
   if (!VIEWS[id]) id = "ov";
   Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
@@ -448,7 +491,7 @@ function show(id){
   document.querySelector(".top h1").textContent = VIEWS[id];
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
   window.scrollTo(0, 0);
-  setTimeout(() => { [gauge, ...pies].forEach(c => c && c.resize()); }, 60);
+  setTimeout(() => { [...ovCharts, ...pies].forEach(c => c && c.resize()); }, 60);
 }
 document.querySelectorAll("nav a").forEach(a => a.onclick = e => { e.preventDefault(); show(a.getAttribute("href").slice(1)); });
 show(location.hash.slice(1));
@@ -559,7 +602,7 @@ function evOn(items, d){
 const fmt = d => new Date(d + "T00:00:00").toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long", year: "numeric"});
 function dayPanel(items){
   const ev = evOn(items, calSel), bk = bookingsOn(calSel), c = $("cc").value, br = $("cb").value, n = ev.length + bk.length;
-  const kl = {close: ["Closes", "background:#c8423f;color:#fff"], open: ["Opens", "background:#4f6db0;color:#fff"], run: ["In progress", "background:#f3d9c2;color:#6b3a14"]};
+  const kl = {close: ["Closes", "background:#c8423f;color:#fff"], open: ["Opens", "background:#9a79df;color:#fff"], run: ["In progress", "background:#f3d9c2;color:#6b3a14"]};
   const sh = t => `<h3 style="margin:16px 0 8px;font-size:14px">${t}</h3>`;
   const short = arr => esc((arr || []).map(v => v.split(" › ").pop()).join(", ")) || "–";
   let h = `<h3 style="margin:18px 0 8px;color:var(--mar)">${esc(fmt(calSel))} · ${n ? '<span style="color:#c8423f">Busy (' + n + ')</span>' : '<span style="color:#2f9e77">Free</span>'}${c ? " · " + esc(c) : br ? " · " + esc(br) + " branch" : ""}</h3>`;
@@ -573,7 +616,7 @@ function dayPanel(items){
 }
 function cellStyle(ev, bk){
   if (bk.length) return bk.every(b => b.status === "Done") ? ' style="background:#bfe8cf;border-color:#2f9e77"' : ' style="background:#ffe69a;border-color:#e0b100"';
-  return ev.length ? ` style="background:rgba(79,109,176,${Math.min(.1 + .08 * ev.length, .35)})"` : "";
+  return ev.length ? ` style="background:rgba(154,121,223,${Math.min(.1 + .08 * ev.length, .35)})"` : "";
 }
 function calendarView(){
   const br = $("cb").value, sel = $("cc"), v = sel.value, known = [...BRANCH.Kathmandu, ...BRANCH.Itahari], oth = new Set();
@@ -588,7 +631,7 @@ function calendarView(){
   for (let d = 1; d <= days; d++) {
     const iso = calY + "-" + z(calM + 1) + "-" + z(d), ev = evOn(items, iso), bk = bookingsOn(iso), n = ev.length + bk.length;
     const cl = ev.some(e => e.k === "close"), op = ev.some(e => e.k === "open");
-    h += `<div class="cd${iso === today ? " today" : ""}${iso === calSel ? " sel" : ""}" data-d="${iso}"${cellStyle(ev, bk)}><span class="dn">${d}</span>${n ? `<span class="cn">${n}</span>` : ""}<span class="dots">${cl ? '<i style="background:#c8423f"></i>' : ""}${op ? '<i style="background:#4f6db0"></i>' : ""}${bk.length ? `<i style="background:${bk.every(b => b.status === "Done") ? "#2f9e77" : "#e0b100"}"></i>` : ""}</span></div>`;
+    h += `<div class="cd${iso === today ? " today" : ""}${iso === calSel ? " sel" : ""}" data-d="${iso}"${cellStyle(ev, bk)}><span class="dn">${d}</span>${n ? `<span class="cn">${n}</span>` : ""}<span class="dots">${cl ? '<i style="background:#c8423f"></i>' : ""}${op ? '<i style="background:#9a79df"></i>' : ""}${bk.length ? `<i style="background:${bk.every(b => b.status === "Done") ? "#2f9e77" : "#e0b100"}"></i>` : ""}</span></div>`;
   }
   $("cgrid").innerHTML = h;
   dayPanel(items);
@@ -741,6 +784,60 @@ function splashDone(ok){
 setTimeout(() => splashDone(false), 25000);
 
 $("sbmode").onchange = () => renderPies(sbActive);
+
+// ===== Dashboard home (glass layout) =====
+let ovCharts = [], ovState = null;
+const DONEC = "#9a79df", PARTC = "#ee8f6e", NOTC = "#8dbbf0", AVC = ["#9a79df", "#ee8f6e", "#5da2ea", "#e0a93b", "#4fb79a"];
+const ini = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+const av = (n, i) => `<span class="av" style="background:${AVC[(i || 0) % AVC.length]}" title="${esc(n)}">${esc(ini(n))}</span>`;
+function schoolSteps(school, progNames){
+  let d = 0, t = 0, sc = 0, n = 0;
+  programs.forEach(p => {
+    if (progNames && progNames.length && !progNames.includes(p.name)) return;
+    const s = p.schools.find(x => x.name.toLowerCase() === school.toLowerCase()); if (!s) return;
+    t += p.steps.length; s.vals.forEach(v => { if (score(v) === 1) d++; }); sc += s.sc; n++;
+  });
+  return {d, t, v: n ? sc / n : 0};
+}
+function renderOverview(st, board){
+  ovCharts.forEach(c => c.destroy()); ovCharts = [];
+  const {active, names, all} = st, total = all[0] + all[1] + all[2], today = isoToday(), pc = i => total ? Math.round(all[i] / total * 100) : 0;
+  $("stats").innerHTML = `<span class="pill"><b>${names.length}</b> schools</span><span class="pill"><b>${active.length}</b> programs</span><span class="pill"><b>${all[0]} / ${total}</b> steps done</span><span class="pill soft">${esc(st.deltaTxt)}</span>`;
+  const up = (DATA.__schedules || []).filter(b => b.date >= today).sort((a, b) => a.date.localeCompare(b.date) || a.shift.localeCompare(b.shift)).slice(0, 3);
+  let cards;
+  if (up.length) {
+    $("ftitle").textContent = up[0].date === today ? "Today's schedule" : "Upcoming schedule";
+    cards = up.map((b, i) => { const ss = schoolSteps(b.school, b.programs);
+      return `<div class="fc c${i + 1}" data-go="cal"><span class="fchip">${b.date === today ? "Today" : esc(b.date)} · ${esc(b.shift)}</span><div class="ft">${esc(b.programs[0] || "Schedule")}${b.programs.length > 1 ? ` <small>+${b.programs.length - 1} more</small>` : ""}</div><div class="fs">${esc(b.school)}</div><div class="fa">${av(b.consultant, i)}<span class="fcn">${esc(b.consultant)}</span></div><div class="fp"><i><b style="width:${Math.round(ss.v * 100)}%"></b></i><span>${ss.d}/${ss.t}</span></div></div>`; });
+  } else {
+    $("ftitle").textContent = "Programs in focus";
+    cards = [...active].sort((a, b) => b.pct - a.pct).slice(0, 3).map((p, i) => {
+      const cs = [...new Set(p.schools.map(x => x.consultant).filter(Boolean))].slice(0, 3);
+      return `<div class="fc c${i + 1}" data-go="pr"><span class="fchip">Program</span><div class="ft">${esc(p.name)}</div><div class="fs">${p.schools.length} schools</div><div class="fa">${cs.map((c, j) => av(c, j)).join("")}</div><div class="fp"><i><b style="width:${Math.round(p.pct * 100)}%"></b></i><span>${p.counts[0]}/${p.counts[0] + p.counts[1] + p.counts[2]}</span></div></div>`; });
+  }
+  $("fcards").innerHTML = cards.join("") || '<p class="sub">No data yet.</p>';
+  const col = [DONEC, PARTC, NOTC], lab = ["Done", "Partly done", "Not started"];
+  $("rtot").textContent = "Total steps " + total;
+  $("rleg").innerHTML = lab.map((l, i) => `<li><i style="background:${col[i]}"></i><div><span>${l}</span><b>${pc(i)}%</b></div></li>`).join("");
+  ovCharts.push(new Chart($("rring"), {type: "doughnut",
+    data: {datasets: [0, 1, 2].map(i => ({data: [pc(i), 100 - pc(i)], backgroundColor: [col[i], "rgba(125,115,175,.12)"], borderWidth: 0, borderRadius: 30}))},
+    options: {cutout: "34%", maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {filter: i => i.dataIndex === 0, callbacks: {label: c => lab[c.datasetIndex] + ": " + c.raw + "% (" + all[c.datasetIndex] + " steps)"}}}}}));
+  const consOf2 = n => { for (const p of programs) { const s = p.schools.find(x => x.name === n); if (s && s.consultant) return s.consultant; } return ""; };
+  $("rank").innerHTML = board.slice(0, 4).map((b, i) => `<div class="rk2">${av(b.n, i)}<div><b>${esc(b.n)}</b><small>${esc(consOf2(b.n)) || "No consultant yet"}</small></div><span class="pts">${pct(b.v)}</span></div>`).join("") || '<p class="sub">No schools yet.</p>';
+  const tp = [...active].sort((a, b) => b.pct - a.pct).slice(0, 6), pat = (() => { const c = document.createElement("canvas"); c.width = c.height = 8; const x = c.getContext("2d"); x.strokeStyle = "rgba(120,115,160,.4)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(0, 8); x.lineTo(8, 0); x.stroke(); return x.createPattern(c, "repeat"); })();
+  const vals = tp.map(p => Math.round(p.pct * 100));
+  ovCharts.push(new Chart($("trk"), {type: "bar",
+    data: {labels: tp.map(p => p.name.length > 9 ? p.name.slice(0, 8) + "…" : p.name), datasets: [
+      {label: "Remaining", data: tp.map(() => 100), backgroundColor: pat, borderRadius: 20, borderSkipped: false, grouped: false, order: 2, barPercentage: .62},
+      {label: "Progress", data: vals, backgroundColor: vals.map((_, i) => i % 2 ? "#c9d3ea" : PARTC), borderColor: "#fff", borderWidth: 3, borderRadius: 20, borderSkipped: false, grouped: false, order: 1, barPercentage: .62}]},
+    options: {maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {filter: i => i.datasetIndex === 1, callbacks: {title: i => tp[i[0].dataIndex].name, label: c => c.raw + "% complete"}}},
+      scales: {x: {grid: {display: false}, border: {display: false}, ticks: {font: {size: 10}}}, y: {display: false, min: 0, max: 100}}}}));
+  const soon = (DATA.__targets || []).filter(t => t.close && t.close >= today).sort((a, b) => a.close.localeCompare(b.close)).slice(0, 4);
+  $("soon").innerHTML = soon.map((t, i) => `<div class="sn"><span class="snic">${i + 1}</span><div><b>${esc(t.school)}</b><small>${esc(t.program)} · ${esc(t.close)}</small></div>${dueChip(t.close)}</div>`).join("") || '<p class="sub">No closing dates coming up.</p>';
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g && g.dataset.go) show(g.dataset.go); });
+$("newbk").onclick = () => { show("cal"); openBook(isoToday()); };
+
 $("rf").onclick = load;
 $("sel").onchange = detail;
 load();
