@@ -225,6 +225,28 @@ dialog{border-radius:26px}
 @media(max-width:1100px){.ovrow1,.ovrow2{grid-template-columns:1fr}}
 @media(max-width:900px){.app{margin:10px;padding:12px;border-radius:26px}.topbar{flex-wrap:wrap;border-radius:26px;padding:10px 14px}.topbar nav{order:3;width:100%;overflow-x:auto;margin:0;gap:6px}.topbar nav a{white-space:nowrap;background:rgba(255,255,255,.7);padding:8px 14px}.topbar nav a.on{background:var(--mar)}.topbar .live{margin-left:auto}.acts2{width:100%}.acts2 button{flex:1}}
 @media(max-width:700px){.fcards{grid-template-columns:1fr}.fc{min-height:0}.ringwrap{flex-direction:column}}
+.trgrid{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+#tmap{height:520px;border-radius:22px;border:1px solid #fff;z-index:0;background:#e8ecf6}
+.mk{width:30px;height:30px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.srow{display:flex;gap:8px}.srow input{flex:1;min-width:0}
+details.tset{border:1px solid var(--bd);border-radius:16px;background:rgba(255,255,255,.7);margin-top:16px}
+details.tset summary{padding:11px 14px;cursor:pointer;font-weight:500;color:var(--mar)}
+.tsb{padding:4px 14px 14px;border-top:1px solid var(--bd)}.tsb .fl:first-child{margin-top:12px}
+.trt{margin:12px 0 0}.trt td{padding:7px 4px;white-space:normal;border-bottom:1px solid #ece9f6}.trt td.r{text-align:right;white-space:nowrap;font-weight:500}.trt tr.sum td{font-weight:600;color:var(--mar)}
+.tamt{background:#e5e2fb;border-radius:18px;padding:14px 16px;margin-top:12px}.tamt span{display:block;font-size:12px;color:var(--mu)}.tamt b{font-size:28px;font-weight:600;color:var(--mar)}
+.tnote{font-size:12.5px;color:var(--mu);margin:10px 0 0}.tflag{background:#fff4e8;border:1px solid #f6d3b6;border-radius:12px;padding:8px 12px;font-size:12.5px;margin-top:8px;color:#8a4a1c}
+@media(max-width:900px){.trgrid{grid-template-columns:1fr}#tmap{height:380px}}
+.trr{position:relative}
+.msearch{position:absolute;top:12px;left:12px;right:12px;z-index:1200;max-width:430px}.msearch .srow input{box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.msr{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);margin-top:6px;overflow:hidden}.msr:empty{display:none}
+.msr button{display:block;width:100%;text-align:left;background:#fff;color:var(--tx);border:0;border-radius:0;padding:9px 12px;margin:0;font-size:12.5px;border-bottom:1px solid #eee}.msr button:hover{background:#f3effc;filter:none}
+.stp{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ece9f6}.stp span{flex:1;font-size:12.5px;min-width:0}.stp b{display:flex;gap:4px}
+.dot{width:16px;height:16px;border-radius:50%;cursor:pointer;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px #d6d2e6}
+button.sm{padding:2px 9px;font-size:12px;margin:0}
+.sw{display:flex;gap:6px;flex-wrap:wrap;padding-top:4px}.swc{width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #cfcbe0;padding:0;margin:0;cursor:pointer}.swc.on{box-shadow:0 0 0 2px var(--mar)}
+.tbtns{display:flex;gap:8px;margin-top:12px}.tbtns button{margin:0;flex:1}
+.tactive{background:#e8f6ee;border:1px solid #bfe3cf;border-radius:14px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#1f5d3d}
+.trt tr.th td{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:600}
 </style>
 <meta name="theme-color" content="#26215c">
 
@@ -243,7 +265,7 @@ dialog{border-radius:26px}
 <div class="app">
 <header class="topbar">
   <div class="brand"><img id="sbLogo" alt="EIMCTA logo"><div class="ttl">Program Track Sheet<small>by EIMCTA</small></div></div>
-  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#mx">Matrix</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a></nav>
+  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#mx">Matrix</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#trv">Travel</a></nav>
   <div class="live"><i></i><span id="upd">Loading data…</span></div>
 </header>
 <div class="content">
@@ -286,10 +308,46 @@ dialog{border-radius:26px}
     <div class="cal" id="cgrid"></div>
     <div class="legend"><span><i style="background:#ffe69a;border:1px solid #e0b100"></i>Booked</span><span><i style="background:#bfe8cf;border:1px solid #2f9e77"></i>Done</span><span><i style="background:rgba(154,121,223,.25)"></i>Target date only</span><span><i style="background:#c8423f;border-radius:50%"></i>Closing date</span><span><i style="background:#9a79df;border-radius:50%"></i>Opening date</span><span><i style="background:#fff;border:1px solid var(--bd)"></i>Free</span></div>
     <div id="cday"></div></section>
+<section id="trv"><h2>Travel planner: route, distance, time &amp; reimbursement</h2>
+    <p class="sub" style="margin-top:-6px">Build the day's route: start point, one or more clients (schools or pins from the map), and where the day ends. You get the road distance, the travel time and the reimbursable amount, and you can start and stop the trip to record the times.</p>
+    <div id="tactive" class="tactive" style="display:none"></div>
+    <div class="trgrid">
+      <div class="trl">
+        <div class="two"><div class="fl"><span>Consultant</span><select id="tc"></select></div><div class="fl"><span>Vehicle</span><select id="tv"><option>Motorcycle</option><option>Car</option></select></div></div>
+        <div class="two"><div class="fl"><span>Day type</span><select id="td"><option value="w">Working day</option><option value="h">Weekend / holiday</option></select></div><div class="fl"><span>Planned start time</span><input id="tt0" type="time"></div></div>
+        <div class="two"><div class="fl"><span>Start from</span><select id="t_s"><option value="H">Home</option><option value="O">Office</option></select></div><div class="fl"><span>End at</span><select id="t_e"><option value="O">Office</option><option value="H">Home</option></select></div></div>
+        <div class="fl"><span>Stops (clients), in visiting order</span><div id="tstops"></div>
+          <div class="srow"><select id="ts"></select><button class="ghost" id="tadds" style="margin:0">Add school</button></div>
+          <button class="ghost" id="taddp" style="margin:8px 0 0">+ Add the map pin as a stop</button></div>
+        <div class="two"><div class="fl"><span>Pin and route colour</span><div class="sw" id="tsw"></div></div><div class="fl"><span>Minutes at each stop</span><input id="tdw" type="number" min="0" value="60"></div></div>
+        <button id="tgo" style="margin:0">Calculate distance &amp; time</button> <span class="sub" id="tmsg2" style="font-weight:600"></span>
+        <div id="tres2"></div>
+        <div class="tbtns"><button id="tstart">▶ Start trip</button><button class="ghost" id="tstop">■ Stop trip</button></div>
+        <details class="tset" id="tset"><summary>Locations &amp; settings (edit code needed to save)</summary><div class="tsb">
+          <div class="fl"><span>Save the map pin as the location of</span><select id="lt"><option value="school">The school selected in the stops box</option><option value="home">Home of the consultant selected above</option><option value="office">Branch office of the consultant selected above</option></select></div>
+          <p class="sub" id="lcur" style="margin:0 0 8px"></p>
+          <button id="lsave" style="margin:0">Save this pin as the location</button>
+          <hr style="border:0;border-top:1px solid var(--bd);margin:16px 0">
+          <div class="two"><div class="fl"><span>Petrol price per litre (Rs.)</span><input id="st_p" type="number" min="0" step="0.5"></div><div class="fl"><span>Motorcycle km per litre</span><input id="st_m1" type="number" min="1" step="0.5"></div></div>
+          <div class="two"><div class="fl"><span>Car km per litre</span><input id="st_m2" type="number" min="1" step="0.5"></div><div class="fl"><span>Tolerance (km counted as 0)</span><input id="st_t" type="number" min="0" step="0.5"></div></div>
+          <div class="two"><div class="fl"><span>Max payable km per visit</span><input id="st_x" type="number" min="1"></div><div class="fl"><span>Home to clients and back home</span><select id="st_mode"><option value="NET">Net of commute (recommended)</option><option value="FULL">Pay the full distance</option></select></div></div>
+          <button id="ssave" style="margin:0">Save settings</button>
+        </div></details>
+      </div>
+      <div class="trr">
+        <div class="msearch"><div class="srow"><input id="msq" placeholder="Search a place on the map…"><button class="ghost" id="msb" style="margin:0">Search</button></div><div id="msr" class="msr"></div></div>
+        <div id="tmap"></div>
+        <p class="sub" id="pinbar" style="margin:8px 0 0">Search a place or click the map to drop a pin, then use “Add the map pin as a stop”.</p>
+        <div class="legend"><span><i style="background:#5da2ea;border-radius:50%"></i>H Home</span><span><i style="background:#9a79df;border-radius:50%"></i>O Office</span><span><i style="background:#ee8f6e;border-radius:50%"></i>1, 2, 3… Stops (your colour)</span><span><i style="background:#26215c;border-radius:50%"></i>New pin</span></div>
+      </div>
+    </div>
+    <h3 style="margin:22px 0 8px;color:var(--mar)">Trip log</h3><div id="tlog" class="scroll"></div></section>
 </main>
 <footer>Program Track Sheet &middot; EIMCTA &middot; for Sustainable Improvement</footer>
 </div></div>
 <dialog id="bk"><div id="bkf"></div></dialog>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 // ====== Your Apps Script link ======
@@ -370,6 +428,7 @@ function render(){
   detail();
   schoolView();
   calendarView();
+  travelFill();
 }
 
 let pies = [], sbActive = [];
@@ -483,7 +542,7 @@ $("today").textContent = new Date().toLocaleDateString(undefined, {weekday: "lon
 $("ssel").onchange = () => { $("ss").value = $("ssel").value; schoolView(); };
 $("ss").oninput = schoolView; $("ss").onchange = schoolView;
 $("sres").onclick = e => { const b = e.target.closest("[data-s]"); if (b) { $("ss").value = b.dataset.s; schoolView(); } };
-const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar"};
+const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", trv: "Travel & Distance"};
 function show(id){
   if (!VIEWS[id]) id = "ov";
   Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
@@ -491,6 +550,7 @@ function show(id){
   document.querySelector(".top h1").textContent = VIEWS[id];
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
   window.scrollTo(0, 0);
+  if (id === "trv") setTimeout(() => { initTravel(); if (tmap) tmap.invalidateSize(); travelMarkers(); }, 80);
   setTimeout(() => { [...ovCharts, ...pies].forEach(c => c && c.resize()); }, 60);
 }
 document.querySelectorAll("nav a").forEach(a => a.onclick = e => { e.preventDefault(); show(a.getAttribute("href").slice(1)); });
@@ -837,6 +897,215 @@ function renderOverview(st, board){
 }
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g && g.dataset.go) show(g.dataset.go); });
 $("newbk").onclick = () => { show("cal"); openBook(isoToday()); };
+
+
+// ===== Travel planner (route builder, map, time tracking, reimbursement) =====
+let tmap = null, tlay = null, tpick = null, tpickMk = null, tpickAddr = "", tstops = [], tcol = "#ee8f6e", tlast = null, tfound = [];
+const TCOLS = ["#ee8f6e", "#9a79df", "#5da2ea", "#4fb79a", "#e0a93b", "#d9534f", "#26215c"];
+const TSET0 = {petrol: 200, mileage: {Motorcycle: 40, Car: 12}, tol: 2, maxKm: 100, mode: "NET"};
+const kvv = k => (DATA.__kv || {})[k];
+function tset(){ const x = kvv("settings") || {}; return {...TSET0, ...x, mileage: {...TSET0.mileage, ...(x.mileage || {})}}; }
+const branchOf = c => BRANCH.Kathmandu.includes(c) ? "Kathmandu" : BRANCH.Itahari.includes(c) ? "Itahari" : "";
+const locS = n => kvv("loc:school:" + n), locH = c => kvv("loc:home:" + c), locO = c => kvv("loc:office:" + branchOf(c));
+const pin = (t, bg) => L.divIcon({className: "", html: `<div class="mk" style="background:${bg}">${t}</div>`, iconSize: [30, 30], iconAnchor: [15, 15]});
+const tm = (t, ok) => { const m = $("tmsg2"); m.textContent = t; m.style.color = ok ? "#2f9e77" : "#c8423f"; };
+const hhmm = d => d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+const mins = m => m >= 60 ? Math.floor(m / 60) + " h " + Math.round(m % 60) + " min" : Math.round(m) + " min";
+function initTravel(){
+  if (tmap) return;
+  if (!window.L) { tm("The map could not load. Check your internet connection and refresh."); return; }
+  tmap = L.map("tmap").setView([27.7, 85.32], 11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19, attribution: "© OpenStreetMap contributors"}).addTo(tmap);
+  tlay = L.layerGroup().addTo(tmap);
+  tmap.on("click", e => setPick(e.latlng, ""));
+}
+function setPick(ll, addr){
+  tpick = ll; tpickAddr = addr || "";
+  $("pinbar").textContent = "Pin: " + (addr || ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5)) + ". Use “Add the map pin as a stop”, or save it as a location in “Locations & settings”.";
+  if (!tmap) return;
+  if (tpickMk) tpickMk.setLatLng(ll); else tpickMk = L.marker(ll, {icon: pin("●", "#26215c")}).addTo(tmap);
+}
+function drawSw(){ $("tsw").innerHTML = TCOLS.map(c => `<button type="button" class="swc${c === tcol ? " on" : ""}" data-c="${c}" style="background:${c}" title="Use this colour"></button>`).join(""); }
+function stopsHtml(){
+  $("tstops").innerHTML = tstops.length ? tstops.map((x, i) => `<div class="stp"><i class="dot" data-cc="${i}" style="background:${x.col}" title="Click to change this pin's colour"></i><span>${i + 1}. ${esc(x.n)}</span><b><button class="ghost sm" data-up="${i}">↑</button><button class="ghost sm" data-dn="${i}">↓</button><button class="ghost sm" data-rm="${i}">×</button></b></div>`).join("") : '<p class="sub" style="margin:0 0 8px">No stops yet. Add a school, or search / click the map and add the pin.</p>';
+  travelMarkers();
+}
+function travelFill(){
+  const sc = $("tc"), ss = $("ts"), vc = sc.value, vs = ss.value;
+  sc.innerHTML = '<option value="">Select consultant…</option>' + ["Kathmandu", "Itahari"].map(b => `<optgroup label="${b} branch">${BRANCH[b].map(n => `<option>${esc(n)}</option>`).join("")}</optgroup>`).join("");
+  const sn = [...new Set(programs.flatMap(p => p.schools.map(x => x.name)))].sort((a, b) => a.localeCompare(b));
+  ss.innerHTML = '<option value="">Select school…</option>' + sn.map(n => `<option>${esc(n)}</option>`).join("");
+  sc.value = vc; ss.value = vs;
+  if (!$("tset").open) { const S = tset(); $("st_p").value = S.petrol; $("st_m1").value = S.mileage.Motorcycle; $("st_m2").value = S.mileage.Car; $("st_t").value = S.tol; $("st_x").value = S.maxKm; $("st_mode").value = S.mode; }
+  tripLog(); showActive();
+}
+function travelMarkers(){
+  const c = $("tc").value, t = $("lt").value, s = $("ts").value;
+  const cur = t === "school" ? (s && locS(s)) : t === "home" ? (c && locH(c)) : (c && locO(c));
+  $("lcur").textContent = cur ? "Saved location: " + (cur.addr || cur.lat + ", " + cur.lng) : "No location saved yet for this selection.";
+  if (!tmap) return;
+  tlay.clearLayers();
+  const pts = [], add = (q, l, col, nm) => { if (q) { L.marker([q.lat, q.lng], {icon: pin(l, col)}).bindTooltip(nm).addTo(tlay); pts.push([q.lat, q.lng]); } };
+  add(c && locH(c), "H", "#5da2ea", "Home"); add(c && locO(c), "O", "#9a79df", "Office");
+  tstops.forEach((q, i) => add(q, String(i + 1), q.col, q.n));
+  if (pts.length > 1) tmap.fitBounds(pts, {padding: [40, 40]}); else if (pts.length) tmap.setView(pts[0], 14);
+}
+async function mapSearch(){
+  const q = $("msq").value.trim(); if (!q) return;
+  initTravel();
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=5&q=" + encodeURIComponent(q + ", Nepal"));
+    tfound = await r.json();
+    $("msr").innerHTML = tfound.length ? tfound.map((x, i) => `<button type="button" data-f="${i}">${esc(x.display_name)}</button>`).join("") : '<button type="button" disabled>No place found. Try a landmark, or click the map.</button>';
+  } catch (e) { $("msr").innerHTML = '<button type="button" disabled>Search failed. Click the map to drop a pin instead.</button>'; }
+}
+async function travelGo(){
+  const c = $("tc").value, hol = $("td").value === "h", S = tset();
+  let sa = $("t_s").value, ea = $("t_e").value; if (hol) { sa = "H"; ea = "H"; }
+  if (!c) return tm("Choose the consultant first.");
+  if (!tstops.length) return tm("Add at least one stop: a school, or a pin from the map.");
+  const H = locH(c), O = locO(c), need = [];
+  if (!H) need.push("the home of " + c);
+  if (!hol && !O) need.push("the " + (branchOf(c) || "branch") + " office");
+  if (need.length) return tm("Please save " + need.join(" and ") + " first (open “Locations & settings”).");
+  tm("Calculating road distances and times…", true);
+  const nodes = [{n: "Home", ...H}]; if (O) nodes.push({n: "Office", ...O});
+  const off = nodes.length; tstops.forEach(x => nodes.push({n: x.n, lat: x.lat, lng: x.lng}));
+  let D, T;
+  try {
+    const r = await fetch("https://router.project-osrm.org/table/v1/driving/" + nodes.map(q => q.lng + "," + q.lat).join(";") + "?annotations=distance,duration");
+    const j = await r.json(); if (j.code !== "Ok") throw new Error(j.code || "no route"); D = j.distances; T = j.durations;
+  } catch (e) { return tm("Could not get road distances (" + e.message + "). Please try again in a moment."); }
+  const iH = 0, iO = O ? 1 : -1, d = (a, b) => (D[a][b] || 0) / 1000, tt = (a, b) => (T[a][b] || 0) / 60;
+  const seq = [sa === "H" ? iH : iO, ...tstops.map((_, i) => off + i), ea === "H" ? iH : iO];
+  const legs = [];
+  for (let i = 0; i < seq.length - 1; i++) { const a = seq[i], b = seq[i + 1]; legs.push({a: nodes[a].n, b: nodes[b].n, km: d(a, b), paid: d(a, b), min: tt(a, b), label: ""}); }
+  const last = legs[legs.length - 1]; let base = 0, note;
+  if (hol) note = "Weekend or holiday: there is no office commute to deduct, so the full distance is paid.";
+  else if (sa === "H" && ea === "O") { base = d(iH, iO); note = "Home → clients → Office: only the extra distance is paid. The Home → Office trip you make anyway is deducted."; }
+  else if (sa === "O" && ea === "O") note = "Office → clients → Office: Home → Office is your normal commute and is not paid. Every leg from the office and back to the office is paid.";
+  else if (sa === "O" && ea === "H") { last.paid = Math.max(0, last.km - d(iO, iH)); last.label = last.a + " → Home, less Office → Home (min 0)"; note = "Office → clients → Home: all legs are paid, except that on the way home only the part beyond the normal Office → Home distance is paid."; }
+  else if (S.mode === "FULL") note = "Home → clients → Home: the whole distance is paid (policy setting).";
+  else { base = d(iH, iO) + d(iO, iH); note = "Home → clients → Home: the Home → Office → Home distance you would have travelled anyway is deducted once for the whole day (minimum 0)."; }
+  const actual = legs.reduce((a, l) => a + l.paid, 0), flags = [];
+  let pay = Math.max(0, actual - base);
+  if (pay > 0 && pay < S.tol) { flags.push("Under " + S.tol + " km counts as 0 (tolerance)."); pay = 0; }
+  let capped = pay;
+  if (pay > S.maxKm) { capped = S.maxKm; flags.push("Over the limit of " + S.maxKm + " km per visit. Only " + S.maxKm + " km is counted, and a manager must approve the rest."); }
+  const veh = $("tv").value, mil = S.mileage[veh] || 1, cpk = S.petrol / mil, amt = capped * cpk, f1 = v => v.toFixed(1) + " km";
+  const t0 = new Date(), v0 = $("tt0").value; if (v0) { const q = v0.split(":"); t0.setHours(+q[0], +q[1], 0, 0); }
+  const dw = +$("tdw").value || 0; let cur = t0.getTime(), drive = 0; const arr = [];
+  legs.forEach((l, i) => { cur += l.min * 60000; drive += l.min; arr.push(new Date(cur)); if (i < legs.length - 1) cur += dw * 60000; });
+  const total = (cur - t0.getTime()) / 60000;
+  $("tres2").innerHTML = `<table class="trt"><tr class="th"><td>Leg</td><td class="r">Paid</td><td class="r">Drive</td><td class="r">Arrive</td></tr>${legs.map((l, i) => `<tr><td>${esc(l.label || l.a + " → " + l.b)}</td><td class="r">${f1(l.paid)}</td><td class="r">${mins(l.min)}</td><td class="r">${hhmm(arr[i])}</td></tr>`).join("")}
+    <tr class="sum"><td>Distance for this day</td><td class="r">${f1(actual)}</td><td class="r">${mins(drive)}</td><td></td></tr>
+    <tr><td>Normal commute deducted</td><td class="r">− ${f1(base)}</td><td></td><td></td></tr>
+    <tr class="sum"><td>Payable distance</td><td class="r">${f1(capped)}</td><td></td><td></td></tr>
+    <tr><td>Cost per km (Rs. ${S.petrol} ÷ ${mil} km per litre, ${esc(veh)})</td><td class="r">Rs. ${cpk.toFixed(2)}</td><td></td><td></td></tr>
+    <tr><td>Planned ${hhmm(t0)} → expected finish ${hhmm(new Date(cur))}</td><td></td><td class="r" colspan="2">${mins(total)}</td></tr></table>
+    <div class="tamt"><span>Estimated reimbursement</span><b>Rs. ${amt.toFixed(2)}</b></div>
+    ${flags.map(x => `<div class="tflag">${esc(x)}</div>`).join("")}
+    <p class="tnote">${esc(note)} This is an estimate before the trip. Use Start trip and Stop trip to record the real times.</p>`;
+  tlast = {c, veh, hol, sa, ea, stops: tstops.map(x => ({n: x.n, lat: x.lat, lng: x.lng, col: x.col})), actual: +actual.toFixed(2), base: +base.toFixed(2), payKm: +capped.toFixed(2), amt: +amt.toFixed(2), cpk: +cpk.toFixed(2),
+    estDrive: Math.round(drive), estTotal: Math.round(total), date: isoToday(), col: tcol, legs: legs.map(l => ({a: l.a, b: l.b, km: +l.km.toFixed(2), paid: +l.paid.toFixed(2), min: Math.round(l.min)}))};
+  tm("Done.", true);
+  try {
+    const r2 = await fetch("https://router.project-osrm.org/route/v1/driving/" + seq.map(i => nodes[i].lng + "," + nodes[i].lat).join(";") + "?overview=full&geometries=geojson");
+    const j2 = await r2.json();
+    if (j2.code === "Ok" && tmap) { travelMarkers(); const line = L.geoJSON(j2.routes[0].geometry, {style: {color: tcol, weight: 5, opacity: .85}}).addTo(tlay); tmap.fitBounds(line.getBounds(), {padding: [40, 40]}); }
+  } catch (e) {}
+}
+// ----- trips: start / stop times and log -----
+const trips = () => Object.keys(DATA.__kv || {}).filter(k => k.startsWith("trip:")).map(k => DATA.__kv[k]).filter(t => t && t.id).sort((a, b) => b.start.localeCompare(a.start));
+const activeTrip = () => { const c = $("tc").value; return trips().find(t => t.status === "Started" && (!c || t.c === c)); };
+const getPos = () => new Promise(res => { if (typeof navigator !== "undefined" && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => res({lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6)}), () => res(null), {timeout: 4000}); else res(null); });
+function showActive(){
+  const t = activeTrip(), b = $("tactive");
+  if (!t) { b.style.display = "none"; return; }
+  b.style.display = "flex";
+  b.innerHTML = `<b>● Trip in progress</b><span>${esc(t.c)} · started ${hhmm(new Date(t.start))} · ${mins((Date.now() - new Date(t.start)) / 60000)} so far</span>`;
+}
+function tripLog(){
+  const c = $("tc").value, list = trips().filter(t => !c || t.c === c).slice(0, 25);
+  const chip = st => `<span class="chip" style="${st === "Paid" ? "background:#2f9e77;color:#fff" : st === "Approved" ? "background:#9a79df;color:#fff" : st === "Started" ? "background:#e8f6ee;color:#1f5d3d" : "background:#ffe69a;color:#6b5200"}">${esc(st)}</span>`;
+  $("tlog").innerHTML = list.length ? '<table><tr><th>Date</th><th>Consultant</th><th>Route</th><th>Started</th><th>Stopped</th><th>Time taken</th><th>Payable km</th><th>Amount</th><th>Status</th><th></th></tr>' + list.map(t => `<tr><td>${esc(t.date)}</td><td>${esc(t.c)}</td><td style="white-space:normal;min-width:200px">${t.sa === "H" ? "Home" : "Office"} → ${esc(t.stops.map(x => x.n).join(" → "))} → ${t.ea === "H" ? "Home" : "Office"}</td><td>${hhmm(new Date(t.start))}</td><td>${t.stop ? hhmm(new Date(t.stop)) : "–"}</td><td>${t.stop ? mins((new Date(t.stop) - new Date(t.start)) / 60000) : "in progress"}</td><td>${t.payKm} km</td><td>Rs. ${t.amt.toFixed(2)}</td><td>${chip(t.status)}</td><td style="white-space:nowrap">${t.status === "Pending" ? `<button class="ghost sm" data-ap="${esc(t.id)}">Approve</button> ` : t.status === "Approved" ? `<button class="ghost sm" data-pd="${esc(t.id)}">Mark paid</button> ` : ""}<button class="ghost sm" data-td="${esc(t.id)}">Delete</button></td></tr>`).join("") + "</table>" : '<p class="sub" style="padding:12px">No trips recorded yet.</p>';
+}
+const saveTrip = t => post({action: "setKV", k: "trip:" + t.id, value: t});
+// ----- events -----
+$("tc").onchange = () => { travelMarkers(); tripLog(); showActive(); };
+$("ts").onchange = $("lt").onchange = travelMarkers;
+["tc", "td", "tv", "t_s", "t_e", "tt0", "tdw"].forEach(i => $(i).addEventListener("change", () => { tlast = null; }));
+$("td").addEventListener("change", () => { $("t_s").disabled = $("t_e").disabled = $("td").value === "h"; });
+$("tgo").onclick = travelGo;
+$("tsw").onclick = e => { const b = e.target.closest("[data-c]"); if (b) { tcol = b.dataset.c; drawSw(); } };
+$("tadds").onclick = () => {
+  const n = $("ts").value; if (!n) return tm("Choose a school first.");
+  const q = locS(n); if (!q) return tm("Save the location of " + n + " first: drop a pin and use “Locations & settings”.");
+  tstops.push({n, lat: q.lat, lng: q.lng, col: tcol}); tlast = null; tm(""); stopsHtml();
+};
+$("taddp").onclick = () => {
+  if (!tpick) return tm("Search a place or click the map to drop a pin first.");
+  tstops.push({n: tpickAddr ? tpickAddr.split(",").slice(0, 2).join(",").trim() : "Pin " + (tstops.length + 1), lat: +tpick.lat.toFixed(6), lng: +tpick.lng.toFixed(6), col: tcol}); tlast = null; tm(""); stopsHtml();
+};
+$("tstops").onclick = e => {
+  const g = a => e.target.closest("[" + a + "]"); let b;
+  if ((b = g("data-rm"))) tstops.splice(+b.dataset.rm, 1);
+  else if ((b = g("data-up"))) { const i = +b.dataset.up; if (i > 0) [tstops[i - 1], tstops[i]] = [tstops[i], tstops[i - 1]]; }
+  else if ((b = g("data-dn"))) { const i = +b.dataset.dn; if (i < tstops.length - 1) [tstops[i + 1], tstops[i]] = [tstops[i], tstops[i + 1]]; }
+  else if ((b = g("data-cc"))) { const i = +b.dataset.cc; tstops[i].col = TCOLS[(TCOLS.indexOf(tstops[i].col) + 1) % TCOLS.length]; }
+  else return;
+  tlast = null; stopsHtml();
+};
+$("msb").onclick = mapSearch; $("msq").onkeydown = e => { if (e.key === "Enter") mapSearch(); };
+$("msr").onclick = e => { const b = e.target.closest("[data-f]"); if (!b) return; const x = tfound[+b.dataset.f]; initTravel(); setPick(L.latLng(+x.lat, +x.lon), x.display_name); if (tmap) tmap.setView([+x.lat, +x.lon], 16); $("msr").innerHTML = ""; };
+$("lsave").onclick = async () => {
+  if (!tpick) return tm("Search a place or click the map to drop a pin first.");
+  const t = $("lt").value, c = $("tc").value, s = $("ts").value; let key;
+  if (t === "school") { if (!s) return tm("Choose the school in the stops box first."); key = "loc:school:" + s; }
+  else if (t === "home") { if (!c) return tm("Choose the consultant above first."); key = "loc:home:" + c; }
+  else { const b = branchOf(c); if (!b) return tm("Choose a Kathmandu or Itahari consultant above first."); key = "loc:office:" + b; }
+  const value = {lat: +tpick.lat.toFixed(6), lng: +tpick.lng.toFixed(6), addr: tpickAddr};
+  tm("Saving…", true);
+  const j = await post({action: "setKV", k: key, value});
+  if (!j.ok) return tm(j.error || "Could not save the location.");
+  (DATA.__kv = DATA.__kv || {})[key] = value; tm("Location saved ✓", true); travelMarkers();
+};
+$("ssave").onclick = async () => {
+  const v = {petrol: +$("st_p").value, mileage: {Motorcycle: +$("st_m1").value, Car: +$("st_m2").value}, tol: +$("st_t").value || 0, maxKm: +$("st_x").value || TSET0.maxKm, mode: $("st_mode").value};
+  if (!(v.petrol > 0 && v.mileage.Motorcycle > 0 && v.mileage.Car > 0)) return tm("Petrol price and mileage must be above 0.");
+  tm("Saving…", true);
+  const j = await post({action: "setKV", k: "settings", value: v});
+  if (!j.ok) return tm(j.error || "Could not save the settings.");
+  (DATA.__kv = DATA.__kv || {}).settings = v; tm("Settings saved ✓", true);
+};
+$("tstart").onclick = async () => {
+  if (activeTrip()) return tm("A trip is already in progress. Stop it first.");
+  if (!tlast) { await travelGo(); if (!tlast) return; }
+  tm("Starting the trip…", true);
+  const t = {id: "T" + Date.now(), ...tlast, start: new Date().toISOString(), startPos: await getPos(), stop: "", stopPos: null, status: "Started"};
+  const j = await saveTrip(t);
+  if (!j.ok) return tm(j.error || "Could not start the trip.");
+  (DATA.__kv = DATA.__kv || {})["trip:" + t.id] = t; showActive(); tripLog(); tm("Trip started at " + hhmm(new Date(t.start)) + " ✓", true);
+};
+$("tstop").onclick = async () => {
+  const t = activeTrip(); if (!t) return tm("There is no trip in progress to stop.");
+  tm("Stopping the trip…", true);
+  const u = {...t, stop: new Date().toISOString(), stopPos: await getPos(), status: "Pending"};
+  const j = await saveTrip(u);
+  if (!j.ok) return tm(j.error || "Could not stop the trip.");
+  DATA.__kv["trip:" + u.id] = u; showActive(); tripLog(); tm("Trip stopped. Time taken: " + mins((new Date(u.stop) - new Date(u.start)) / 60000) + " ✓", true);
+};
+$("tlog").onclick = async e => {
+  const b = e.target.closest("[data-ap],[data-pd],[data-td]"); if (!b) return;
+  const id = b.dataset.ap || b.dataset.pd || b.dataset.td, t = (DATA.__kv || {})["trip:" + id]; if (!t) return;
+  let u;
+  if (b.dataset.td) { if (!confirm("Delete this trip record?")) return; u = null; } else u = {...t, status: b.dataset.ap ? "Approved" : "Paid"};
+  const j = await post({action: "setKV", k: "trip:" + id, value: u});
+  if (!j.ok) { alert(j.error || "Could not update the trip."); return; }
+  if (u) DATA.__kv["trip:" + id] = u; else delete DATA.__kv["trip:" + id];
+  tripLog(); showActive();
+};
+drawSw(); stopsHtml(); setInterval(showActive, 30000);
 
 $("rf").onclick = load;
 $("sel").onchange = detail;
