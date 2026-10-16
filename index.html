@@ -266,7 +266,7 @@ body.locked .app{display:none}
 @media(max-width:900px){.me{width:100%;justify-content:flex-end}}
 #gmap{height:520px;border-radius:22px;border:1px solid #fff;z-index:0;background:#e8ecf6}
 .gfrom{flex:1;background:#fff;border:1px solid #e3def5;border-radius:14px;padding:9px 12px;font-size:12.5px;min-width:0}
-.gst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.gst div{background:#fff;border-radius:14px;padding:8px 10px}.gst span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:600}.gst b{font-size:17px;font-weight:600;color:var(--mar)}
+.gst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.gst b{font-size:15px!important}.gst div{background:#fff;border-radius:14px;padding:8px 10px}.gst span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:600}.gst b{font-size:17px;font-weight:600;color:var(--mar)}
 .flt2{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.flt2 select{min-width:170px}
 @media(max-width:900px){#gmap{height:380px}}
 </style>
@@ -1302,10 +1302,41 @@ function hav(a, b){ const R = 6371000, r = x => x * Math.PI / 180, dLa = r(b.lat
 function encN(n){ n = n < 0 ? ~(n << 1) : n << 1; let o = ""; while (n >= 32) { o += String.fromCharCode((32 | (n & 31)) + 63); n >>= 5; } return o + String.fromCharCode(n + 63); }
 function encPoly(pts){ let o = "", pl = 0, pg = 0; pts.forEach(p => { const la = Math.round(p[0] * 1e5), lo = Math.round(p[1] * 1e5); o += encN(la - pl) + encN(lo - pg); pl = la; pg = lo; }); return o; }
 function decPoly(str){ let i = 0, la = 0, lo = 0; const o = []; while (i < str.length) { let b, sh = 0, r = 0; do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32); la += (r & 1) ? ~(r >> 1) : (r >> 1); sh = 0; r = 0; do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32); lo += (r & 1) ? ~(r >> 1) : (r >> 1); o.push([la / 1e5, lo / 1e5]); } return o; }
-async function revGeo(lat, lng){
-  try { const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&lat=" + lat + "&lon=" + lng), j = await r.json(); return (j.display_name || "").split(",").slice(0, 3).join(",").trim() || lat.toFixed(5) + ", " + lng.toFixed(5); }
-  catch (e) { return lat.toFixed(5) + ", " + lng.toFixed(5); }
+const hhmmss = d => d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+const localStr = ts => { const d = new Date(ts), z = n => String(n).padStart(2, "0"); return isoOf(ts) + " " + z(d.getHours()) + ":" + z(d.getMinutes()) + ":" + z(d.getSeconds()); };
+const placeCache = {};
+function knownPlace(lat, lng){
+  let best = null, bd = 120; const here = {lat, lng};
+  const chk = (name, q) => { if (!q || q.lat == null) return; const d = hav(here, q); if (d < bd) { bd = d; best = name; } };
+  Object.keys(DATA.__kv || {}).forEach(k => { if (k.indexOf("loc:school:") === 0) chk(k.slice(11), DATA.__kv[k]); });
+  if (ME) { chk("Home (" + ME.name + ")", (DATA.__kv || {})["loc:home:" + ME.name]); const br = branchOf(ME.name) || ME.branch; if (br) chk(br + " office", (DATA.__kv || {})["loc:office:" + br]); }
+  (gs ? gs.dests : gdest).forEach(x => chk(x.n, x));
+  return best;
 }
+async function poiName(lat, lng){
+  const t = ["amenity", "shop", "office", "tourism", "leisure", "building"].map(k => `nwr(around:60,${lat},${lng})["name"]["${k}"];`).join("");
+  const ac = typeof AbortController !== "undefined" ? new AbortController() : null; if (ac) setTimeout(() => ac.abort(), 7000);
+  try {
+    const r = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent("[out:json][timeout:8];(" + t + ");out center 25;"), ac ? {signal: ac.signal} : undefined), j = await r.json();
+    let best = null, bd = 1e9;
+    (j.elements || []).forEach(e => { const la = e.lat != null ? e.lat : e.center && e.center.lat, lo = e.lon != null ? e.lon : e.center && e.center.lon, tg = e.tags || {}; if (la == null || !tg.name) return; const d = hav({lat, lng}, {lat: la, lng: lo}) - (tg.building && !tg.amenity && !tg.shop && !tg.office ? 25 : 0); if (d < bd) { bd = d; best = tg["name:en"] || tg.name; } });
+    return best || "";
+  } catch (e) { return ""; }
+}
+async function placeInfo(lat, lng){
+  const key = lat.toFixed(4) + "," + lng.toFixed(4); if (placeCache[key]) return placeCache[key];
+  let name = knownPlace(lat, lng) || "", addr = "";
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&namedetails=1&lat=" + lat + "&lon=" + lng), j = await r.json(), a = j.address || {};
+    if (!name) name = (j.namedetails && (j.namedetails["name:en"] || j.namedetails.name)) || "";
+    const road = a.road || a.pedestrian || a.footway || a.path || "", area = a.neighbourhood || a.suburb || a.city_district || a.village || a.town || a.city || "";
+    addr = [road, area].filter(Boolean).join(", ") || (j.display_name || "").split(",").slice(0, 3).join(",").trim();
+  } catch (e) {}
+  if (!name) name = await poiName(lat, lng);
+  if (!name) name = addr || lat.toFixed(5) + ", " + lng.toFixed(5);
+  const out = {name, addr: addr && addr !== name ? addr : ""}; placeCache[key] = out; return out;
+}
+const placeHtml = (n, a) => "<b>" + esc(n) + "</b>" + (a ? "<br><small>" + esc(a) + "</small>" : "");
 const getFix = () => new Promise(res => { if (typeof navigator !== "undefined" && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => res({lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, ts: p.timestamp || Date.now()}), () => res(null), {enableHighAccuracy: true, timeout: 12000, maximumAge: 0}); else res(null); });
 const gMsg = (t, ok) => { const m = $("g_msg"); m.textContent = t || ""; m.style.color = ok ? "#2f9e77" : "#c8423f"; };
 function initK(){
@@ -1324,7 +1355,7 @@ async function gLocate(){
   $("g_from").textContent = "Locating…";
   const f = await getFix();
   if (!f) { $("g_from").textContent = "Location not available. Allow location access in your browser."; return; }
-  gfrom = {lat: f.lat, lng: f.lng, addr: await revGeo(f.lat, f.lng)}; $("g_from").textContent = gfrom.addr;
+  const pi = await placeInfo(f.lat, f.lng); gfrom = {lat: f.lat, lng: f.lng, name: pi.name, addr: pi.addr}; $("g_from").innerHTML = placeHtml(pi.name, pi.addr);
   initK();
   if (kmap) { if (kme) kme.setLatLng([f.lat, f.lng]); else kme = L.marker([f.lat, f.lng], {icon: pin("●", "#5da2ea")}).addTo(kmap); kmap.setView([f.lat, f.lng], 15); }
 }
@@ -1337,42 +1368,51 @@ async function gSearch(){
   } catch (e) { $("g_r").innerHTML = '<button type="button" disabled>Search failed. Please try again.</button>'; }
 }
 function nearestDest(a){ let best = "", bd = 150; (gs ? gs.dests : []).forEach(x => { const d = hav(a, x); if (d < bd) { bd = d; best = x.n; } }); return best; }
-function gCloseStop(departTs){
-  if (!gs || !gs.open) return;
-  const o = gs.open; o.depart = departTs || Date.now(); o.min = Math.round((o.depart - o.arrive) / 60000); gs.stops.push(o); gs.open = null;
+function gOpenStop(){
+  const o = {lat: gs.anchor.lat, lng: gs.anchor.lng, arrive: gs.anchor.ts, depart: 0, min: 0, name: "Finding the place name…", addr: "", dest: nearestDest(gs.anchor)};
+  placeInfo(o.lat, o.lng).then(p => { o.name = p.name; o.addr = p.addr; gUi(); });
+  return o;
+}
+function gCloseStop(dep){
+  if (!gs) return;
+  if (!gs.open && gs.anchor && dep - gs.anchor.ts >= DWELL_MS) gs.open = gOpenStop();   // a stop whose fixes arrived late
+  if (!gs.open) return;
+  const o = gs.open; o.depart = dep || Date.now(); o.min = Math.round((o.depart - o.arrive) / 60000); gs.stops.push(o); gs.open = null;
 }
 function gFeed(lat, lng, acc, ts, spd){
   if (!gs || acc > 80) return;
-  const p = {lat, lng, ts, acc};
-  if (gs.prev) {
-    const d2 = hav(gs.prev, p), dt2 = (ts - gs.prev.ts) / 1000, moved = d2 >= Math.max(8, acc * .5);
+  const p = {lat, lng, ts, acc}, pv = gs.prev;
+  if (pv) {
+    const d2 = hav(pv, p), dt2 = (ts - pv.ts) / 1000, moved = d2 >= Math.max(8, acc * .5);
     if (dt2 > 0 && dt2 < 120 && d2 / dt2 * 3.6 > 160) return;            // impossible jump: ignore this fix
     const kmh = spd != null && spd >= 0 ? spd * 3.6 : (moved && dt2 > 0 ? d2 / dt2 * 3.6 : 0);
-    gs.kmh = kmh; if (kmh > gs.maxKmh) gs.maxKmh = kmh; if (kmh > 2 && dt2 > 0 && dt2 < 120) gs.moveMs += ts - gs.prev.ts;
+    gs.kmh = kmh; if (kmh > gs.maxKmh) gs.maxKmh = kmh; if (kmh > 2 && dt2 > 0 && dt2 < 120) gs.moveMs += ts - pv.ts;
   }
   gs.prev = p; gs.cur = p;
   if (!gs.last) { gs.last = p; gs.pts.push([lat, lng, ts]); }
   else { const d = hav(gs.last, p); if (d >= Math.max(8, acc * .5)) { gs.km += d / 1000; gs.last = p; gs.pts.push([lat, lng, ts]); } }
   if (!gs.anchor) { gs.anchor = {lat, lng, ts}; gs.lastIn = ts; }
   else if (hav(gs.anchor, p) < DWELL_M) gs.lastIn = ts;
-  else { gCloseStop(gs.lastIn); gs.anchor = {lat, lng, ts}; gs.lastIn = ts; }
+  else {
+    // left the spot: work out when the person really left (fixes can be sparse while standing still)
+    const dd = hav(gs.anchor, p), v = spd != null && spd > .5 ? spd : (pv && ts > pv.ts ? hav(pv, p) / ((ts - pv.ts) / 1000) : 0);
+    let dep = gs.lastIn; if (v > .5) dep = Math.max(gs.lastIn, ts - Math.min(dd / v * 1000, ts - gs.lastIn));
+    gCloseStop(dep); gs.anchor = {lat, lng, ts}; gs.lastIn = ts;
+  }
 }
 function gTick(){
   if (!gs) return;
   const now = Date.now();
-  if (!gs.open && gs.anchor && now - gs.anchor.ts >= DWELL_MS && now - gs.lastIn < 150000) {
-    const o = {lat: gs.anchor.lat, lng: gs.anchor.lng, arrive: gs.anchor.ts, depart: 0, min: 0, addr: "Finding the address…", dest: nearestDest(gs.anchor)};
-    gs.open = o; revGeo(o.lat, o.lng).then(a => { o.addr = a; gUi(); });
-  }
+  if (!gs.open && gs.anchor && now - gs.anchor.ts >= DWELL_MS && now - gs.lastIn < 150000) gs.open = gOpenStop();
   gUi(); if (now - (gs.saved || 0) > 15000) gSave();
 }
 function gSave(){ if (!gs) return; try { gs.saved = Date.now(); localStorage.setItem(G_KEY, JSON.stringify(gs)); } catch (e) {} }
 function gUi(){
   const st = $("g_stats");
   if (!gs) { st.innerHTML = ""; $("g_stops").innerHTML = '<span class="sub">Stops are logged by themselves when you stay within 30 m for more than 5 minutes.</span>'; return; }
-  const c = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`, all = [...gs.stops, ...(gs.open ? [gs.open] : [])];
-  st.innerHTML = c("Time", mins((Date.now() - gs.start) / 60000)) + c("Distance", gs.km.toFixed(2) + " km") + c("Speed", Math.round(gs.kmh || 0) + " km/h") + c("Max speed", Math.round(gs.maxKmh) + " km/h") + c("Stops", all.length) + c("GPS accuracy", gs.cur ? "±" + Math.round(gs.cur.acc) + " m" : "–");
-  $("g_stops").innerHTML = all.length ? all.map((x, i) => `<div class="stp"><span><b>${i + 1}. ${esc(x.addr)}</b>${x.dest ? " · " + esc(x.dest) : ""}<br><small>${hhmm(new Date(x.arrive))} → ${x.depart ? hhmm(new Date(x.depart)) : "now"} · ${mins(((x.depart || Date.now()) - x.arrive) / 60000)}</small></span></div>`).join("") : '<span class="sub">No stops yet.</span>';
+  const c = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`, all = [...gs.stops, ...(gs.open ? [gs.open] : [])], ago = gs.cur ? Math.round((Date.now() - gs.cur.ts) / 1000) : null;
+  st.innerHTML = c("Started", hhmmss(new Date(gs.start))) + c("Time", mins((Date.now() - gs.start) / 60000)) + c("Distance", gs.km.toFixed(2) + " km") + c("Speed", Math.round(gs.kmh || 0) + " km/h") + c("Max speed", Math.round(gs.maxKmh) + " km/h") + c("Status", (gs.kmh || 0) > 2 ? "Moving" : "Standing still") + c("Stops", all.length) + c("GPS accuracy", gs.cur ? "±" + Math.round(gs.cur.acc) + " m" : "–") + c("Last GPS fix", ago === null ? "–" : (ago < 90 ? ago + " s ago" : mins(ago / 60) + " ago"));
+  $("g_stops").innerHTML = all.length ? all.map((x, i) => `<div class="stp"><span>${i + 1}. ${placeHtml(x.name, x.addr)}${x.dest ? "<br><small>Planned stop: " + esc(x.dest) + "</small>" : ""}<br><small>${hhmmss(new Date(x.arrive))} → ${x.depart ? hhmmss(new Date(x.depart)) : "now"} · ${mins(((x.depart || Date.now()) - x.arrive) / 60000)}</small></span></div>`).join("") : '<span class="sub">No stops yet.</span>';
   if (kmap && gs.cur) { if (kme) kme.setLatLng([gs.cur.lat, gs.cur.lng]); else kme = L.marker([gs.cur.lat, gs.cur.lng], {icon: pin("●", "#5da2ea")}).addTo(kmap); kline.setLatLngs(gs.pts.map(q => [q[0], q[1]])); kmap.panTo([gs.cur.lat, gs.cur.lng]); }
 }
 async function gWake(){ try { if (typeof navigator !== "undefined" && navigator.wakeLock) gwake = await navigator.wakeLock.request("screen"); } catch (e) {} }
@@ -1388,19 +1428,27 @@ function gStopWatch(){
 async function gStart(){
   if (gs) return gMsg("A trip is already running.");
   if (!ME) return;
+  const clickTs = Date.now();                                  // the trip starts when the button is pressed
   gMsg("Getting your GPS location…", true);
   const f = await getFix(); if (!f) return gMsg("Could not read your GPS. Allow location access and try again.");
-  const now = Date.now(), addr = await revGeo(f.lat, f.lng), pt = {lat: f.lat, lng: f.lng, ts: now, acc: f.acc};
-  gs = {id: "K" + now, user: ME.email, name: ME.name, start: now, from: {lat: f.lat, lng: f.lng, addr}, dests: gdest.map(x => ({...x})), pts: [[f.lat, f.lng, now]], km: 0, maxKmh: 0, moveMs: 0, kmh: 0, stops: [], open: null, anchor: {lat: f.lat, lng: f.lng, ts: now}, lastIn: now, last: pt, prev: pt, cur: pt, saved: 0};
-  gWatch(); gSave(); gBanner(); gMsg("Trip started ✓ Tracking your GPS.", true); gUi();
+  const pi = await placeInfo(f.lat, f.lng), pt = {lat: f.lat, lng: f.lng, ts: clickTs, acc: f.acc};
+  gs = {id: "K" + clickTs, user: ME.email, name: ME.name, start: clickTs, from: {lat: f.lat, lng: f.lng, name: pi.name, addr: pi.addr}, dests: gdest.map(x => ({...x})), pts: [[f.lat, f.lng, clickTs]], km: 0, maxKmh: 0, moveMs: 0, kmh: 0, stops: [], open: null, anchor: {lat: f.lat, lng: f.lng, ts: clickTs}, lastIn: clickTs, last: pt, prev: pt, cur: pt, saved: 0};
+  gWatch(); gSave(); gBanner(); gMsg("Trip started at " + hhmmss(new Date(clickTs)) + " from " + pi.name + " ✓", true); gUi();
 }
 async function gEnd(){
   if (!gs) return gMsg("There is no trip running.");
-  const end = Date.now(); gStopWatch(); gCloseStop(gs.lastIn || end);
+  const end = Date.now(); gStopWatch();
+  gCloseStop(gs.cur && gs.anchor && hav(gs.anchor, gs.cur) < DWELL_M ? end : gs.lastIn || end);
+  gMsg("Finding the place names…", true);
+  const lastPt = gs.cur || gs.last || gs.from, ep = await placeInfo(lastPt.lat, lastPt.lng);
+  await Promise.all(gs.stops.map(x => /^Finding/.test(x.name) ? placeInfo(x.lat, x.lng).then(q => { x.name = q.name; x.addr = q.addr; }) : null));
   const pts = gs.pts, step = Math.max(1, Math.ceil(pts.length / 1500)), slim = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
-  const row = {id: gs.id, date: isoOf(gs.start), start: new Date(gs.start).toISOString(), end: new Date(end).toISOString(), durMin: Math.round((end - gs.start) / 60000), km: +gs.km.toFixed(2),
-    avgKmh: gs.moveMs > 0 ? +(gs.km / (gs.moveMs / 3600000)).toFixed(1) : 0, maxKmh: +gs.maxKmh.toFixed(1), from: gs.from, dests: gs.dests,
-    stops: gs.stops.map(x => ({lat: +x.lat.toFixed(6), lng: +x.lng.toFixed(6), addr: x.addr, dest: x.dest, arrive: new Date(x.arrive).toISOString(), depart: new Date(x.depart).toISOString(), min: x.min})), route: encPoly(slim)};
+  const pl = (n, a) => n + (a ? " (" + a + ")" : "");
+  const row = {id: gs.id, date: isoOf(gs.start), start: new Date(gs.start).toISOString(), end: new Date(end).toISOString(), startLocal: localStr(gs.start), endLocal: localStr(end),
+    durMin: Math.round((end - gs.start) / 60000), km: +gs.km.toFixed(2), avgKmh: gs.moveMs > 0 ? +(gs.km / (gs.moveMs / 3600000)).toFixed(1) : 0, maxKmh: +gs.maxKmh.toFixed(1),
+    from: gs.from, dests: gs.dests, startPlace: pl(gs.from.name || "", gs.from.addr), endPlace: pl(ep.name, ep.addr), endPt: {lat: +lastPt.lat.toFixed(6), lng: +lastPt.lng.toFixed(6), name: ep.name, addr: ep.addr},
+    stops: gs.stops.map(x => ({lat: +x.lat.toFixed(6), lng: +x.lng.toFixed(6), name: x.name, addr: x.addr, dest: x.dest, arrive: new Date(x.arrive).toISOString(), depart: new Date(x.depart).toISOString(), arriveLocal: localStr(x.arrive), departLocal: localStr(x.depart), min: x.min})), route: encPoly(slim)};
+  row.stopsText = row.stops.map((x, i) => (i + 1) + ". " + pl(x.name, x.addr) + " | " + x.arriveLocal.slice(11) + " to " + x.departLocal.slice(11) + " | " + x.min + " min").join("\n");
   try { localStorage.setItem(G_PEND, JSON.stringify(row)); localStorage.removeItem(G_KEY); } catch (e) {}
   gs = null; gUi(); gMsg("Saving the trip…", true);
   await gSend(row);
@@ -1411,7 +1459,7 @@ async function gSend(row){
   if (j.ok) {
     try { localStorage.removeItem(G_PEND); } catch (e) {}
     DATA.__tracks = (DATA.__tracks || []).filter(t => t.id !== row.id); DATA.__tracks.push({...row, name: ME.name, email: ME.email, branch: ME.branch || ""});
-    gMsg("Trip saved to your Google Sheet ✓ " + row.km + " km in " + mins(row.durMin) + ".", true); return true;
+    gMsg("Trip saved to your Google Sheet ✓ " + row.km + " km in " + mins(row.durMin) + ". From " + (row.from.name || "") + " to " + row.endPt.name + ".", true); return true;
   }
   gMsg((j.error || "Could not save the trip.") + " Your trip is kept on this device. Use “Send saved trip” to try again."); return false;
 }
@@ -1434,8 +1482,8 @@ function gView(id){
   initK(); if (!kmap) return;
   klay.clearLayers(); const pts = decPoly(t.route || "");
   kline.setLatLngs(pts);
-  if (pts.length) { L.marker(pts[0], {icon: pin("S", "#5da2ea")}).bindTooltip("Start: " + (t.from && t.from.addr || "")).addTo(klay); L.marker(pts[pts.length - 1], {icon: pin("E", "#26215c")}).bindTooltip("End").addTo(klay); }
-  (t.stops || []).forEach((x, i) => L.marker([x.lat, x.lng], {icon: pin(String(i + 1), "#d9534f")}).bindTooltip((x.addr || "") + " · " + x.min + " min").addTo(klay));
+  if (pts.length) { L.marker(pts[0], {icon: pin("S", "#5da2ea")}).bindTooltip("Start: " + ((t.from && t.from.name) || "")).addTo(klay); L.marker(pts[pts.length - 1], {icon: pin("E", "#26215c")}).bindTooltip("End: " + ((t.endPt && t.endPt.name) || "")).addTo(klay); }
+  (t.stops || []).forEach((x, i) => L.marker([x.lat, x.lng], {icon: pin(String(i + 1), "#d9534f")}).bindTooltip((x.name || x.addr || "") + " · " + x.min + " min").addTo(klay));
   if (pts.length) kmap.fitBounds(pts, {padding: [40, 40]});
   window.scrollTo(0, 0);
 }
@@ -1447,7 +1495,8 @@ function gHistory(){
   $("g_fu").innerHTML = '<option value="">All users</option>' + users.map(n => `<option>${esc(n)}</option>`).join(""); $("g_fu").value = users.includes(uv) ? uv : "";
   const rows = list.filter(t => (!bv || t.branch === bv) && (!$("g_fu").value || t.name === $("g_fu").value)).slice(0, 40);
   $("g_sum").textContent = rows.length ? rows.length + " trips · " + rows.reduce((a, t) => a + (+t.km || 0), 0).toFixed(1) + " km in total" : "";
-  $("g_log").innerHTML = rows.length ? '<table><tr><th>Date</th><th>Name</th><th>Branch</th><th>Started</th><th>Ended</th><th>Time</th><th>Distance</th><th>Avg speed</th><th>Stops</th><th></th></tr>' + rows.map(t => `<tr><td>${esc(t.date)}</td><td>${esc(t.name)}</td><td>${esc(t.branch) || "–"}</td><td>${hhmm(new Date(t.start))}</td><td>${hhmm(new Date(t.end))}</td><td>${mins(t.durMin)}</td><td>${(+t.km).toFixed(1)} km</td><td>${t.avgKmh} km/h</td><td>${(t.stops || []).length}</td><td><button class="ghost sm" data-gv="${esc(t.id)}">View route</button></td></tr>`).join("") + "</table>" : '<p class="sub" style="padding:12px">No tracked trips yet.</p>';
+  const nm = o => (o && o.name) || "–";
+  $("g_log").innerHTML = rows.length ? '<table><tr><th>Date</th><th>Name</th><th>Branch</th><th>Started at</th><th>From</th><th>Ended at</th><th>To</th><th>Time</th><th>Distance</th><th>Avg speed</th><th>Stops</th><th></th></tr>' + rows.map(t => `<tr><td>${esc(t.date)}</td><td>${esc(t.name)}</td><td>${esc(t.branch) || "–"}</td><td>${hhmmss(new Date(t.start))}</td><td style="white-space:normal;min-width:150px">${esc(nm(t.from))}</td><td>${hhmmss(new Date(t.end))}</td><td style="white-space:normal;min-width:150px">${esc(nm(t.endPt))}</td><td>${mins(t.durMin)}</td><td>${(+t.km).toFixed(1)} km</td><td>${t.avgKmh} km/h</td><td style="white-space:normal;min-width:180px">${(t.stops || []).length ? (t.stops || []).map((x, i) => (i + 1) + ". " + esc(x.name || x.addr || "") + " (" + x.min + " min)").join("<br>") : "–"}</td><td><button class="ghost sm" data-gv="${esc(t.id)}">View route</button></td></tr>`).join("") + "</table>" : '<p class="sub" style="padding:12px">No tracked trips yet.</p>';
 }
 $("g_start").onclick = gStart; $("g_end").onclick = gEnd; $("g_loc").onclick = gLocate;
 $("g_qb").onclick = gSearch; $("g_q").onkeydown = e => { if (e.key === "Enter") gSearch(); };
