@@ -1,0 +1,1090 @@
+/* Third Eye by EIMCTA: the whole dashboard in JavaScript.
+   Part 1 builds the page (HTML) inside <div id="root">. Part 2 is the program: login, calendar, Travel, tracking and charts. */
+const APP_HTML = [
+  "<div id=\"login\" class=\"hide\">",
+  " <div class=\"lg-card\">",
+  "  <img id=\"lgLogo\" alt=\"EIMCTA logo\">",
+  "  <h2>Third Eye</h2><p class=\"lg-by\">by EIMCTA &middot; for Sustainable Improvement</p>",
+  "  <div id=\"lgv_in\">",
+  "   <form id=\"lgf\" autocomplete=\"on\">",
+  "    <div class=\"fl\"><span>Username or email</span><input id=\"lg_e\" type=\"text\" autocomplete=\"username\" placeholder=\"Username or email\" required></div>",
+  "    <div class=\"fl\"><span>Password</span><div class=\"pw\"><input id=\"lg_p\" type=\"password\" autocomplete=\"current-password\" placeholder=\"Your password\" required><button type=\"button\" class=\"eye\" data-eye=\"lg_p\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "    <label class=\"lg-rem\"><input type=\"checkbox\" id=\"lg_r\" checked> Keep me signed in on this device</label>",
+  "    <button type=\"submit\" id=\"lg_go\">Sign in</button>",
+  "   </form>",
+  "   <a class=\"lg-link\" id=\"lg_fg\" href=\"#\">Forgot password?</a>",
+  "  </div>",
+  "  <div id=\"lgv_f1\" hidden>",
+  "   <p class=\"sub\">Enter your username or email. We will send a 6-digit code to your email.</p>",
+  "   <div class=\"fl\"><span>Username or email</span><input id=\"lg_fe\" type=\"text\" placeholder=\"Username or email\"></div>",
+  "   <button type=\"button\" class=\"wide\" id=\"lg_fs\">Send the code</button><br><a class=\"lg-link\" id=\"lg_fb\" href=\"#\">← Back to sign in</a>",
+  "  </div>",
+  "  <div id=\"lgv_f2\" hidden>",
+  "   <p class=\"sub\">Type the code from your email and choose a new password.</p>",
+  "   <input type=\"hidden\" id=\"lg_re\">",
+  "   <div class=\"fl\"><span>6-digit code</span><input id=\"lg_c\" inputmode=\"numeric\" maxlength=\"6\" autocomplete=\"one-time-code\"></div>",
+  "   <div class=\"fl\"><span>New password (8 or more characters)</span><div class=\"pw\"><input id=\"lg_np\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\" data-eye=\"lg_np\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "   <div class=\"fl\"><span>Repeat the new password</span><div class=\"pw\"><input id=\"lg_np2\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\" data-eye=\"lg_np2\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "   <button type=\"button\" class=\"wide\" id=\"lg_rs\">Change password</button><br><a class=\"lg-link\" id=\"lg_fb2\" href=\"#\">← Back to sign in</a>",
+  "  </div>",
+  "  <p id=\"lg_msg\"></p>",
+  " </div>",
+  "</div>",
+  "<div id=\"splash\" role=\"status\" aria-live=\"polite\">",
+  "  <div class=\"sp-in\">",
+  "    <div class=\"sp-ring\"><img id=\"spLogo\" src=\"data:image/jpeg;base64,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\" alt=\"EIMCTA logo\"></div>",
+  "    <h2>Third Eye</h2>",
+  "    <p class=\"sp-by\">by EIMCTA &middot; for Sustainable Improvement</p>",
+  "    <div class=\"sp-bar\"><i></i></div>",
+  "    <p id=\"spMsg\">Connecting to your Google Sheet…</p>",
+  "    <button id=\"spSnd\" type=\"button\">🔊 Sound on</button>",
+  "  </div>",
+  "</div>",
+  "<div class=\"app\">",
+  "<header class=\"topbar\">",
+  "  <div class=\"brand\"><img id=\"sbLogo\" alt=\"EIMCTA logo\"><div class=\"ttl\">Third Eye<small>by EIMCTA</small></div></div>",
+  "  <nav><a href=\"#ov\">Dashboard</a><a href=\"#pr\">Programs</a><a href=\"#pi\">Status</a><a href=\"#mx\">Matrix</a><a href=\"#dt\">Detail</a><a href=\"#sl\">Schools</a><a href=\"#cal\">Calendar</a><a href=\"#gps\">Travel</a><a href=\"#usr\" id=\"navUsr\" style=\"display:none\">Users</a></nav>",
+  "  <div class=\"live\"><i></i><span id=\"upd\">Loading data…</span></div>",
+  "  <div class=\"me\" id=\"me\" style=\"display:none\"><span id=\"meName\"></span><button class=\"ghost sm\" id=\"chpw\">Password</button><button class=\"ghost sm\" id=\"signout\">Sign out</button></div>",
+  "</header>",
+  "<div class=\"content\">",
+  "<div class=\"top\"><div><div class=\"ttlrow\"><h1>Dashboard</h1><span class=\"who\" id=\"who\"></span></div><div class=\"sub\"><span id=\"today\"></span><span class=\"mu2\" id=\"upd2\"></span></div></div>",
+  "  <div class=\"acts2\"><button class=\"ghost\" id=\"printBtn\">Print / PDF</button><button class=\"ghost\" id=\"rf\">Refresh</button><button id=\"newbk\">+ Book a schedule</button></div></div>",
+  "<main>",
+  "  <div id=\"msg\"></div>",
+  "  <div id=\"ov\">",
+  "    <div class=\"stats\" id=\"stats\"></div>",
+  "    <div class=\"ovrow1\">",
+  "      <section class=\"focus\"><div class=\"hd\"><h2 id=\"ftitle\">Today's schedule</h2><button data-go=\"cal\">See all</button></div><div class=\"fcards\" id=\"fcards\"></div></section>",
+  "      <section><div class=\"hd\"><h2>Overall progress</h2><span class=\"sub\" id=\"rtot\"></span></div>",
+  "        <div class=\"ringwrap\"><ul class=\"rleg\" id=\"rleg\"></ul><div class=\"rcv\"><canvas id=\"rring\"></canvas></div></div></section>",
+  "    </div>",
+  "    <div class=\"ovrow2\">",
+  "      <section><div class=\"hd\"><h2>School ranking</h2><button data-go=\"pr\">See all</button></div><div id=\"rank\"></div></section>",
+  "      <section><div class=\"hd\"><h2>Program tracker</h2><button data-go=\"pi\">See all</button></div><div class=\"trk\"><canvas id=\"trk\"></canvas></div></section>",
+  "      <section><div class=\"hd\"><h2>Closing soon</h2><button data-go=\"cal\">See all</button></div><div id=\"soon\"></div></section>",
+  "    </div>",
+  "  </div>",
+  "  <div class=\"g2\" id=\"pr\">",
+  "    <section><h2>Completion by program</h2><div class=\"list\" id=\"plist\"></div>",
+  "      <div class=\"legend\"><span><i style=\"background:#9a79df\"></i>70%+</span><span><i style=\"background:#ee8f6e\"></i>35–69%</span><span><i style=\"background:#8dbbf0\"></i>under 35%</span></div></section>",
+  "    <section><h2>School leaderboard</h2><div class=\"list\" id=\"sclist\"></div></section>",
+  "  </div>",
+  "  <section id=\"pi\"><h2>Status breakdown by school</h2>",
+  "    <div class=\"sbtop\"><p class=\"sub\" id=\"sbsum\"></p><select id=\"sbmode\" aria-label=\"Chart view\"><option value=\"n\">Show number of steps</option><option value=\"p\">Show percent</option></select></div>",
+  "    <div class=\"chartwrap\" id=\"sbwrap\"><canvas id=\"sbar\"></canvas></div></section>",
+  "  <section id=\"mx\"><h2>School × program progress</h2><div class=\"scroll\"><table class=\"heat\" id=\"heat\"></table></div></section>",
+  "  <section id=\"dt\"><h2>Program detail</h2>",
+  "    <p style=\"margin-top:0\"><select id=\"sel\" aria-label=\"Choose a program\"></select></p>",
+  "    <div class=\"scroll\"><table id=\"det\"></table></div></section>",
+  "<section id=\"sl\"><h2>School lookup</h2>",
+  "    <p style=\"margin-top:0;display:flex;gap:10px;flex-wrap:wrap\"><select id=\"ssel\" aria-label=\"Choose a school\"></select><input id=\"ss\" list=\"slist\" autocomplete=\"off\" style=\"display:none\"><datalist id=\"slist\"></datalist></p>",
+  "    <div class=\"tabs\"><button class=\"tb on\" data-t=\"p\">Progress</button><button class=\"tb\" data-t=\"t\">Target dates</button></div>",
+  "    <div id=\"sres\"></div><div id=\"tres\" style=\"display:none\"></div></section>",
+  "<section id=\"cal\"><h2>Consultant calendar</h2>",
+  "    <p class=\"sub\" style=\"margin-top:-6px\">Pick a consultant to see which days are busy. A day is busy when one of their target dates opens, is running, or closes. Click today or a coming date to book a schedule.</p>",
+  "    <div class=\"calbar\"><select id=\"cb\" aria-label=\"Branch\"><option value=\"\">All branches</option><option value=\"Kathmandu\">Kathmandu branch</option><option value=\"Itahari\">Itahari branch</option></select><select id=\"cc\" aria-label=\"Consultant\"></select><button class=\"ghost\" id=\"cprev\" aria-label=\"Previous month\">‹</button><b id=\"cmon\"></b><button class=\"ghost\" id=\"cnext\" aria-label=\"Next month\">›</button><button class=\"ghost\" id=\"ctod\">Today</button></div>",
+  "    <div class=\"cal\" id=\"cgrid\"></div>",
+  "    <div class=\"legend\"><span><i style=\"background:#ffe69a;border:1px solid #e0b100\"></i>Booked</span><span><i style=\"background:#bfe8cf;border:1px solid #2f9e77\"></i>Done</span><span><i style=\"background:rgba(154,121,223,.25)\"></i>Target date only</span><span><i style=\"background:#c8423f;border-radius:50%\"></i>Closing date</span><span><i style=\"background:#9a79df;border-radius:50%\"></i>Opening date</span><span><i style=\"background:#fff;border:1px solid var(--bd)\"></i>Free</span></div>",
+  "    <div id=\"cday\"></div></section>",
+  "",
+  "<section id=\"usr\"><h2>Users &amp; access</h2>",
+  "    <p class=\"sub\" style=\"margin-top:-6px\">Super administrators manage everyone. Branch administrators manage the consultants of their own branch. A new user gets a temporary password by email and can change it with the Password button. The full name must match the consultant's name in the booking list, for example \"Pasang Sherpa\".</p>",
+  "    <div class=\"two\"><div class=\"fl\"><span>Email</span><input id=\"u_e\" type=\"email\" placeholder=\"name@example.com\"></div><div class=\"fl\"><span>Full name</span><input id=\"u_n\" placeholder=\"e.g. Pasang Sherpa\"></div></div>",
+  "    <div class=\"two\"><div class=\"fl\"><span>Username (optional, used to sign in)</span><input id=\"u_u\" placeholder=\"e.g. pasang\"></div><div class=\"fl\" id=\"u_rolebox\"><span>Role</span><select id=\"u_r\"><option value=\"consultant\">Consultant</option><option value=\"branch_admin\">Branch administrator</option><option value=\"admin\">Super administrator</option></select></div></div>",
+  "    <div class=\"two\"><div class=\"fl\" id=\"u_brbox\"><span>Branch</span><select id=\"u_b\"><option value=\"\">No branch (super administrator)</option><option>Kathmandu</option><option>Itahari</option></select></div><div class=\"fl\"><span>&nbsp;</span><button id=\"u_add\" style=\"margin:0\">Add user &amp; email the password</button></div></div>",
+  "    <div id=\"u_msg\" class=\"sub\" style=\"font-weight:600;margin-bottom:10px\"></div>",
+  "    <div class=\"scroll\"><table id=\"u_tab\"></table></div></section>",
+  "<section id=\"gps\"><h2>Travel: live GPS, distance, speed and stops</h2>",
+  "    <p class=\"sub\" style=\"margin-top:-6px\">Your trip starts from where you are now. Add the places you will visit, press Start, and the page records your route, distance and speed. A stop is logged by itself when you stay within 30 m for more than 5 minutes. When you end the trip it is saved to your Google Sheet.</p>",
+  "    <div id=\"g_banner\" class=\"tactive\" style=\"display:none\"></div>",
+  "    <div class=\"trgrid\">",
+  "      <div class=\"trl\">",
+  "        <div class=\"fl\"><span>From: your current GPS location</span><div class=\"srow\"><div id=\"g_from\" class=\"gfrom\">Locating…</div><button class=\"ghost\" id=\"g_loc\" style=\"margin:0\">Locate me</button></div></div>",
+  "        <div class=\"fl\"><span>To: places you will visit (add as many as you need)</span><div id=\"g_dests\"></div><p class=\"sub\" style=\"margin:4px 0 0\">Search a place with the bar on the map, then click a result to add it.</p></div>",
+  "        <div class=\"two\"><div class=\"fl\"><span>Mode of transportation</span><select id=\"g_mode\"><option value=\"bike\">Bike</option><option value=\"car\">Car</option><option value=\"bus\">Bus</option></select></div><div class=\"fl\" id=\"g_farebox\" style=\"display:none\"><span>Actual bus fare paid (Rs.)</span><input id=\"g_fare\" type=\"number\" min=\"0\" step=\"1\" placeholder=\"e.g. 60\"></div></div>",
+  "        <div class=\"tbtns\"><button id=\"g_start\">▶ Start trip</button><button class=\"ghost\" id=\"g_end\">■ End trip</button></div>",
+  "        <div id=\"g_msg\" class=\"sub\" style=\"font-weight:600;margin-top:8px\"></div>",
+  "        <div class=\"gst\" id=\"g_stats\"></div>",
+  "        <h3 style=\"margin:16px 0 6px;font-size:14px;color:var(--mar)\">Stops detected</h3><div id=\"g_stops\"></div>",
+  "        <details class=\"tset\" id=\"g_set\"><summary>Saved places (used to name your stops)</summary><div class=\"tsb\">",
+  "          <p class=\"sub\" style=\"margin:10px 0 8px\">Click the map to drop a pin, then save it. Stops near a saved place are named after it, for example the school's name.</p>",
+  "          <div class=\"fl\"><span>Save the pin as</span><select id=\"g_pt\"><option value=\"school\">A school</option><option value=\"office\" id=\"g_poff\">A branch office (administrators)</option></select></div>",
+  "          <div class=\"fl\" id=\"g_psb\"><span>School</span><select id=\"g_ps\"></select></div>",
+  "          <div class=\"fl\" id=\"g_pob\" style=\"display:none\"><span>Branch</span><select id=\"g_po\"><option>Kathmandu</option><option>Itahari</option></select></div>",
+  "          <p class=\"sub\" id=\"g_pcur\" style=\"margin:0 0 8px\"></p>",
+  "          <button id=\"g_psave\" style=\"margin:0\">Save this pin</button>",
+  "        </div></details>",
+  "        <p class=\"tnote\">Keep this page open and the screen on while you travel. Phones pause GPS when the screen locks or the page is in the background, so we ask the phone to keep the screen awake during a trip.</p>",
+  "      </div>",
+  "      <div class=\"trr\">",
+  "        <div class=\"msearch\"><div class=\"srow\"><input id=\"g_q\" placeholder=\"Search a place to visit…\"><button class=\"ghost\" id=\"g_qb\" style=\"margin:0\">Search</button></div><div id=\"g_r\" class=\"msr\"></div></div>",
+  "        <div id=\"gmap\"></div>",
+  "        <div class=\"legend\"><span><i style=\"background:#5da2ea;border-radius:50%\"></i>You</span><span><i style=\"background:#ee8f6e;border-radius:50%\"></i>Places to visit</span><span><i style=\"background:#9a79df;border-radius:50%\"></i>Your route</span><span><i style=\"background:#d9534f;border-radius:50%\"></i>Detected stops</span><span><i style=\"background:#26215c;border-radius:50%\"></i>Pin to save</span></div>",
+  "        <div class=\"legend\" id=\"g_leg\"></div>",
+  "      </div>",
+  "    </div>",
+  "    <h3 style=\"margin:22px 0 8px;color:var(--mar)\">Tracked trips</h3>",
+  "    <div class=\"flt2\" id=\"g_flt\"><select id=\"g_fb\" aria-label=\"Branch\"><option value=\"\">All branches</option><option>Kathmandu</option><option>Itahari</option></select><select id=\"g_fu\" aria-label=\"User\"></select></div>",
+  "    <div class=\"flt2\"><label class=\"sub\" style=\"display:flex;align-items:center;gap:6px\">From <input type=\"date\" id=\"g_d1\" style=\"min-width:0;width:auto\"></label><label class=\"sub\" style=\"display:flex;align-items:center;gap:6px\">To <input type=\"date\" id=\"g_d2\" style=\"min-width:0;width:auto\"></label><button id=\"g_sp\" style=\"margin:0\">Show all places on the map</button><button class=\"ghost\" id=\"g_sr\" style=\"margin:0\">Show all routes on the map</button></div>",
+  "    <p class=\"sub\" id=\"g_sum\" style=\"margin:0 0 8px\"></p>",
+  "    <div id=\"g_log\" class=\"scroll\"></div>",
+  "    <h3 style=\"margin:22px 0 8px;color:var(--mar)\">Places visited</h3>",
+  "    <div id=\"g_pl\" class=\"scroll\"></div></section>",
+  "</main>",
+  "<footer>Third Eye &middot; by EIMCTA &middot; for Sustainable Improvement</footer>",
+  "</div></div>",
+  "<dialog id=\"pwd\"><div style=\"padding:22px;width:min(380px,88vw)\"><h3 style=\"margin:0 0 14px;color:var(--mar)\">Change password</h3>",
+  "  <div class=\"fl\"><span>Current password</span><div class=\"pw\"><input id=\"pw_o\" type=\"password\" autocomplete=\"current-password\"><button type=\"button\" class=\"eye\" data-eye=\"pw_o\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "  <div class=\"fl\"><span>New password (8 or more characters)</span><div class=\"pw\"><input id=\"pw_n\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\" data-eye=\"pw_n\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "  <div class=\"fl\"><span>Repeat the new password</span><div class=\"pw\"><input id=\"pw_n2\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\" data-eye=\"pw_n2\" aria-label=\"Show password\"><svg class=\"onn\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg><svg class=\"off\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88\"/><path d=\"M1 1l22 22\"/></svg></button></div></div>",
+  "  <div id=\"pw_msg\" class=\"sub\" style=\"font-weight:600\"></div>",
+  "  <div class=\"acts\"><button id=\"pw_save\">Save</button><button class=\"ghost\" id=\"pw_cancel\">Cancel</button></div></div></dialog>",
+  "<dialog id=\"bk\"><div id=\"bkf\"></div></dialog>"
+].join("\n");
+document.getElementById("root").innerHTML = APP_HTML;
+
+/* ===== Part 2: program ===== */
+// ====== Your Apps Script link ======
+const API_URL = "https://script.google.com/macros/s/AKfycbzbA4hMgEp79D9Hem4hqI-x065Nwv9jGVUChlHA1jkHYeoQaZCIGkcyb42tMZwfgs4_/exec";
+const REFRESH_MS = 60000; // auto-refresh every 60 seconds
+// ===================================
+
+let DATA = {}, chart, programs = [];
+const $ = id => document.getElementById(id);
+let TOK = "", ME = null;
+try { TOK = localStorage.getItem("te_tok") || sessionStorage.getItem("te_tok") || ""; } catch (e) {}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// 1 = done, 0.5 = partly, 0 = not started
+function score(v){
+  v = String(v || "").trim().toLowerCase();
+  if (!v) return 0;
+  if (/not |^no$|pending/.test(v)) return 0;
+  if (/partial|paratial|process|progress/.test(v)) return .5;
+  return 1;
+}
+const pct = x => x == null ? "–" : Math.round(x * 100) + "%";
+
+function build(){
+  programs = Object.entries(DATA)
+    .filter(([n, s]) => !/printable/i.test(n) && s.headers && s.headers.length > 3)
+    .map(([name, s]) => {
+      const steps = s.headers.slice(3);
+      const schools = s.rows.map(r => {
+        const vals = steps.map((_, i) => r[i + 3]);
+        const sc = vals.reduce((a, v) => a + score(v), 0) / (steps.length || 1);
+        return {name: String(r[1]).trim(), consultant: String(r[2] || "").trim(), vals, sc};
+      });
+      const p = schools.length ? schools.reduce((a, x) => a + x.sc, 0) / schools.length : null;
+      const counts = [0, 0, 0];
+      schools.forEach(s => s.vals.forEach(v => { const x = score(v); counts[x === 1 ? 0 : x ? 1 : 2]++; }));
+      return {name, steps, schools, pct: p, counts};
+    });
+}
+
+let gauge;
+const rag = v => v >= .7 ? "#9a79df" : v >= .35 ? "#ee8f6e" : "#8dbbf0";
+function render(){
+  Chart.defaults.font.family = 'Inter,"Segoe UI",sans-serif'; Chart.defaults.color = "#6b7280";
+  const active = programs.filter(p => p.pct != null);
+  const names = [...new Set(programs.flatMap(p => p.schools.map(s => s.name)))];
+  const overall = active.length ? active.reduce((a, p) => a + p.pct, 0) / active.length : 0;
+  const all = [0, 0, 0]; active.forEach(p => p.counts.forEach((v, i) => all[i] += v));
+  if (base === undefined) { try { base = JSON.parse(localStorage.getItem("tk_prev") || "null"); } catch (e) { base = null; } }
+  try { localStorage.setItem("tk_prev", JSON.stringify({d: all[0]})); } catch (e) {}
+  const dl = base && base.d != null ? all[0] - base.d : null;
+  ovState = {active, names, overall, all, deltaTxt: dl == null ? "First visit on this device" : dl > 0 ? "▲ " + dl + " steps done since your last visit" : dl < 0 ? "▼ " + (-dl) + " since your last visit" : "No change since your last visit"};
+  const bar = (v, extra) => `<div class="row">${extra}<div class="rb"><i style="width:${Math.round(v * 100)}%;background:${rag(v)}"></i></div><div class="rp">${pct(v)}</div></div>`;
+  $("plist").innerHTML = [...active].sort((a, b) => b.pct - a.pct)
+    .map(p => bar(p.pct, `<div class="rn" style="width:42%" title="${esc(p.name)}">${esc(p.name)}</div>`)).join("");
+  const lookup = {};
+  programs.forEach(p => p.schools.forEach(s => lookup[p.name + "|" + s.name] = s.sc));
+  const board = names.map(n => { let t = 0, c = 0;
+    active.forEach(p => { const v = lookup[p.name + "|" + n]; if (v != null) { t += v; c++; } });
+    return {n, v: c ? t / c : 0}; }).sort((a, b) => b.v - a.v);
+  $("sclist").innerHTML = board.map((b, i) => bar(b.v, `<div class="rk">${i + 1}</div><div class="rn" title="${esc(b.n)}">${esc(b.n)}</div>`)).join("");
+  renderOverview(ovState, board);
+  let h = "<tr><th>School</th>" + active.map(p => `<th title="${esc(p.name)}">${esc(p.name)}</th>`).join("") + "<th>Average</th></tr>";
+  names.forEach(n => {
+    let tot = 0, cnt = 0;
+    const cells = active.map(p => {
+      const v = lookup[p.name + "|" + n];
+      if (v == null) return '<td class="c" style="color:var(--mu)">–</td>';
+      tot += v; cnt++;
+      const bg = v === 0 ? "var(--no)" : `rgba(154,121,223,${0.18 + 0.72 * v})`;
+      return `<td class="c" style="background:${bg};color:${v > .55 ? "#fff" : "var(--tx)"}">${pct(v)}</td>`;
+    }).join("");
+    h += `<tr><td>${esc(n)}</td>${cells}<td class="c">${cnt ? pct(tot / cnt) : "–"}</td></tr>`;
+  });
+  $("heat").innerHTML = h;
+  renderPies(active);
+  const sel = $("sel"), keep = sel.value;
+  sel.innerHTML = programs.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join("");
+  if (keep && programs[keep]) sel.value = keep;
+  detail();
+  schoolView();
+  calendarView();
+}
+
+let pies = [], sbActive = [];
+function renderPies(active){
+  sbActive = active;
+  pies.forEach(c => c.destroy()); pies = [];
+  const all = [0, 0, 0];
+  active.forEach(p => p.counts.forEach((v, i) => all[i] += v));
+  const m = new Map();
+  active.forEach(p => p.schools.forEach(s => {
+    const k = s.name.toLowerCase(); let e = m.get(k);
+    if (!e) { e = {n: s.name, c: [0, 0, 0]}; m.set(k, e); }
+    s.vals.forEach(v => { const x = score(v); e.c[x === 1 ? 0 : x ? 1 : 2]++; });
+  }));
+  const rows = [...m.values()].sort((a, b) => b.c[0] - a.c[0] || a.n.localeCompare(b.n));
+  const pctMode = $("sbmode").value === "p", tot = r => r.c[0] + r.c[1] + r.c[2] || 1;
+  $("sbsum").textContent = rows.length + " schools · " + all[0] + " steps done, " + all[1] + " partly done, " + all[2] + " not started";
+  $("sbwrap").style.height = Math.max(280, rows.length * 30 + 80) + "px";
+  const ds = (label, i, color) => ({label, backgroundColor: color, borderRadius: 3, data: rows.map(r => pctMode ? Math.round(r.c[i] / tot(r) * 1000) / 10 : r.c[i])});
+  pies.push(new Chart($("sbar"), {
+    type: "bar",
+    data: {labels: rows.map(r => r.n), datasets: [ds("Done", 0, "#9a79df"), ds("Partly done", 1, "#ee8f6e"), ds("Not started", 2, "#8dbbf0")]},
+    options: {
+      indexAxis: "y", maintainAspectRatio: false,
+      plugins: {
+        legend: {position: "top", align: "end", labels: {boxWidth: 12, boxHeight: 12}},
+        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex], n = r.c[c.datasetIndex]; return c.dataset.label + ": " + n + " steps (" + Math.round(n / tot(r) * 100) + "%)"; }}}
+      },
+      scales: {
+        x: {stacked: true, max: pctMode ? 100 : undefined, grid: {color: "#ece9f6"}, title: {display: true, text: pctMode ? "Percent of steps" : "Number of steps"}, ticks: {callback: v => pctMode ? v + "%" : v}},
+        y: {stacked: true, grid: {display: false}, ticks: {autoSkip: false, font: {size: 11}}}
+      }
+    }
+  }));
+}
+
+let base;
+let curSchool = "", lastSchool = null, tab = "p";
+function schoolView(){ curSchool = ""; schoolView0(); targetView(); }
+function schoolView0(){
+  const q = $("ss").value.trim().toLowerCase(), out = $("sres"), m = new Map();
+  programs.forEach(p => p.schools.forEach(s => { const k = s.name.toLowerCase(); if (!m.has(k)) m.set(k, s.name); }));
+  const names = [...m.values()].sort((a, b) => a.localeCompare(b));
+  $("slist").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
+  $("ssel").innerHTML = '<option value="">Select a school…</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  $("ssel").value = names.find(n => n.toLowerCase() === q) || "";
+  if (!q) { out.innerHTML = '<p class="sub">Type or pick a school name to see how many programs it has completed.</p>'; return; }
+  let hit = names.find(n => n.toLowerCase() === q);
+  if (!hit) {
+    const mt = names.filter(n => n.toLowerCase().includes(q));
+    if (mt.length === 1) hit = mt[0];
+    else { out.innerHTML = mt.length ? '<p class="sub">Did you mean:</p>' + mt.slice(0, 10).map(n => `<button class="ghost" data-s="${esc(n)}">${esc(n)}</button>`).join("") : '<p class="sub">No school found with that name.</p>'; return; }
+  }
+  curSchool = hit;
+  const rows = programs.map(p => ({p, s: p.schools.find(x => x.name.toLowerCase() === hit.toLowerCase())})).filter(r => r.s);
+  const done = rows.filter(r => r.s.sc === 1).length, prog = rows.filter(r => r.s.sc > 0 && r.s.sc < 1).length;
+  const avg = rows.length ? rows.reduce((a, r) => a + r.s.sc, 0) / rows.length : 0;
+  let h = `<h3 style="margin:0 0 10px;color:var(--mar)">${esc(hit)}</h3><div class="sk">
+    <div><span>Programs completed</span><b>${done} / ${rows.length}</b></div>
+    <div><span>In progress</span><b>${prog}</b></div>
+    <div><span>Not started</span><b>${rows.length - done - prog}</b></div>
+    <div><span>Average progress</span><b>${pct(avg)}</b></div></div>`;
+  h += '<div class="scroll"><table class="sd"><tr><th>Program / step</th><th>Status</th><th>Progress</th></tr>';
+  rows.forEach(r => {
+    const k = r.s.sc === 1 ? ["Completed", "ok"] : r.s.sc > 0 ? ["In progress", "pa"] : ["Not started", ""];
+    h += `<tr class="gr"><td>${esc(r.p.name)}${r.s.consultant ? ` <span style="font-weight:400;color:var(--mu)">· ${esc(r.s.consultant)}</span>` : ""}</td><td><span class="chip ${k[1]}">${k[0]}</span></td><td><b>${pct(r.s.sc)}</b></td></tr>`;
+    r.p.steps.forEach((t, i) => {
+      const v = String(r.s.vals[i] || "").trim(), x = score(v);
+      h += `<tr><td style="padding-left:30px">${esc(t)}</td><td><span class="chip ${x === 1 ? "ok" : x ? "pa" : ""}">${esc(v || "–")}</span></td><td></td></tr>`;
+    });
+  });
+  h += "</table></div>";
+  out.innerHTML = h;
+}
+
+function detail(){
+  const p = programs[$("sel").value || 0];
+  if (!p) return;
+  if (!p.schools.length){ $("det").innerHTML = "<tr><td>No schools have been added to this program yet.</td></tr>"; return; }
+  let h = "<tr><th>School</th><th>Consultant</th>" + p.steps.map(s => `<th title="${esc(s)}">${esc(s.length > 28 ? s.slice(0, 28) + "…" : s)}</th>`).join("") + "<th>Progress</th></tr>";
+  p.schools.forEach(s => {
+    h += `<tr><td>${esc(s.name)}</td><td>${esc(s.consultant)}</td>` +
+      s.vals.map(v => {
+        const sc = score(v), t = String(v || "").trim();
+        return `<td><span class="chip ${sc === 1 ? "ok" : sc ? "pa" : ""}">${esc(t || "–")}</span></td>`;
+      }).join("") + `<td><b>${pct(s.sc)}</b></td></tr>`;
+  });
+  $("det").innerHTML = h;
+}
+
+async function load(){
+  const msg = $("msg");
+  if (!TOK) return;
+  try {
+    const r = await fetch(API_URL + "?tok=" + encodeURIComponent(TOK) + "&t=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    DATA = await r.json();
+    if (DATA.__auth === false) { signOut("Your session has ended. Please sign in again."); splashDone(false); return; }
+    ME = DATA.__user || ME; meUi(); gBanner();
+    build(); render();
+    msg.style.display = "none";
+    splashDone(true);
+    $("upd").textContent = "Updated " + new Date().toLocaleTimeString() + " · refreshes every minute";
+    $("upd2").textContent = " · Updated " + new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+  } catch (e) {
+    msg.style.display = "block";
+    msg.textContent = "Could not load your sheet data (" + e.message + "). Check that the Apps Script deployment is set to 'Anyone' and that the link ends in /exec.";
+    $("upd").textContent = "Not updated"; $("upd2").textContent = " · Not updated";
+    splashDone(false);
+  }
+}
+
+$("today").textContent = new Date().toLocaleDateString(undefined, {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+$("ssel").onchange = () => { $("ss").value = $("ssel").value; schoolView(); };
+$("ss").oninput = schoolView; $("ss").onchange = schoolView;
+$("sres").onclick = e => { const b = e.target.closest("[data-s]"); if (b) { $("ss").value = b.dataset.s; schoolView(); } };
+const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
+function show(id){
+  if (!VIEWS[id]) id = "ov";
+  Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
+  document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + id));
+  document.querySelector(".top h1").textContent = VIEWS[id];
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+  window.scrollTo(0, 0);
+  if (id === "usr") loadUsers();
+  if (id === "gps") setTimeout(() => { initK(); if (kmap) kmap.invalidateSize(); gLocate(); gPlacesUi(); gHistory(); gBanner(); gUi(); }, 80);
+  setTimeout(() => { [...ovCharts, ...pies].forEach(c => c && c.resize()); }, 60);
+}
+document.querySelectorAll("nav a").forEach(a => a.onclick = e => { e.preventDefault(); show(a.getAttribute("href").slice(1)); });
+show(location.hash.slice(1));
+
+// ===== Target dates =====
+const isoToday = () => { const d = new Date(), z = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()); };
+function dueChip(c){
+  if (!c) return '<span class="chip">No closing date</span>';
+  const d = Math.round((new Date(c + "T00:00:00") - new Date(isoToday() + "T00:00:00")) / 864e5);
+  if (d === 0) return '<span class="chip" style="background:#c8423f;color:#fff">Closes today</span>';
+  if (d < 0) return '<span class="chip" style="background:#f3d4d2;color:#8a2a26">Closed ' + (-d) + ' day' + (d < -1 ? "s" : "") + ' ago</span>';
+  return '<span class="chip ' + (d <= 3 ? "pa" : "ok") + '">' + d + ' day' + (d > 1 ? "s" : "") + ' left</span>';
+}
+function rowHtml(t, dirty){
+  return `<tr data-id="${esc(t.id || "")}"${dirty ? ' class="dirty"' : ""}><td data-l="Program"><input class="tp" list="pdl" placeholder="Program name" value="${esc(t.program)}"></td>
+  <td data-l="Discussion"><textarea class="tdi" rows="2" placeholder="Discussion notes">${esc(t.discussion)}</textarea></td>
+  <td data-l="Opening date"><input type="date" class="to" value="${esc(t.open)}"></td>
+  <td data-l="Closing date"><input type="date" class="tc" value="${esc(t.close)}"></td>
+  <td data-l="Status" class="ts">${dueChip(t.close)}</td>
+  <td data-l=""><button class="sv">Save</button><button class="ghost dl">Delete</button></td></tr>`;
+}
+const tmsg = (t, ok) => { const m = $("tmsg"); if (m) { m.textContent = t; m.style.color = ok ? "#2f9e77" : "#c8423f"; } };
+function targetView(){
+  const out = $("tres");
+  if (!curSchool) { out.innerHTML = $("ss").value.trim() ? $("sres").innerHTML : '<p class="sub">Select a school above to view or add its target dates.</p>'; lastSchool = null; return; }
+  if (out.querySelector("tr.dirty") && lastSchool === curSchool) return; // don't wipe unsaved typing on auto-refresh
+  lastSchool = curSchool;
+  const list = (DATA.__targets || []).filter(t => t.school.toLowerCase() === curSchool.toLowerCase());
+  out.innerHTML = `<h3 style="margin:0 0 10px;color:var(--mar)">${esc(curSchool)}: target dates</h3>
+    <datalist id="pdl">${programs.map(p => `<option value="${esc(p.name)}">`).join("")}</datalist>
+    <div class="scroll"><table class="tt"><tr class="h"><th>Program</th><th>Discussion</th><th>Opening date</th><th>Closing date</th><th>Status</th><th></th></tr>${list.map(t => rowHtml(t)).join("")}</table></div>
+    <p><button class="ghost" id="tadd" style="margin:0">+ Add new target date</button> <span class="sub" id="tmsg"></span></p>
+    ${list.length ? "" : '<p class="sub">No target dates saved for this school yet. Click "+ Add new target date".</p>'}`;
+}
+async function apiPost(payload){
+  try { const r = await fetch(API_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(payload)}); return await r.json(); }
+  catch (e) { return {ok: false, error: "Could not reach the server. Please check your internet connection."}; }
+}
+async function post(payload){
+  if (!TOK) { showLogin("Please sign in."); return {ok: false, error: "Please sign in."}; }
+  const j = await apiPost({...payload, tok: TOK});
+  if (j && j.error === "auth") { signOut("Your session has ended. Please sign in again."); return {ok: false, error: "Please sign in again."}; }
+  return j;
+}
+async function saveRow(tr){
+  const q = c => tr.querySelector(c).value.trim();
+  const row = {id: tr.dataset.id || "", school: curSchool, program: q(".tp"), discussion: q(".tdi"), open: q(".to"), close: q(".tc")};
+  if (!row.program) return tmsg("Please enter the program name.", false);
+  if (row.open && row.close && row.close < row.open) return tmsg("Closing date cannot be before the opening date.", false);
+  tmsg("Saving…", true);
+  const j = await post({action: "save", row});
+  if (!j.ok) return tmsg(j.error || "Save failed", false);
+  row.id = j.id; tr.dataset.id = j.id; tr.classList.remove("dirty");
+  tr.querySelector(".ts").innerHTML = dueChip(row.close);
+  const arr = DATA.__targets = DATA.__targets || [], i = arr.findIndex(x => x.id === row.id);
+  if (i >= 0) arr[i] = row; else arr.push(row);
+  tmsg("Saved ✓", true);
+}
+async function deleteRow(tr){
+  const id = tr.dataset.id;
+  if (!id) { tr.remove(); return; }
+  if (!confirm("Delete this target date?")) return;
+  const j = await post({action: "delete", id});
+  if (!j.ok) return tmsg(j.error || "Delete failed", false);
+  DATA.__targets = (DATA.__targets || []).filter(x => x.id !== id); tr.remove(); tmsg("Deleted", true);
+}
+function setTab(t){
+  tab = t;
+  $("sres").style.display = t === "p" ? "" : "none"; $("tres").style.display = t === "t" ? "" : "none";
+  document.querySelectorAll(".tb").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+}
+document.querySelectorAll(".tb").forEach(b => b.onclick = () => setTab(b.dataset.t));
+$("tres").oninput = e => { const tr = e.target.closest("tr"); if (tr && tr.dataset.id !== undefined) { tr.classList.add("dirty"); } };
+$("tres").onclick = e => {
+  const b = e.target.closest("[data-s]"); if (b) { $("ss").value = b.dataset.s; schoolView(); return; }
+  const tr = e.target.closest("tr");
+  if (e.target.closest(".sv")) saveRow(tr);
+  else if (e.target.closest(".dl")) deleteRow(tr);
+  else if (e.target.closest("#tadd")) { $("tres").querySelector("table").insertAdjacentHTML("beforeend", rowHtml({}, true)); $("tres").querySelector("tr:last-child .tp").focus(); }
+};
+
+
+// ===== Consultant calendar =====
+let calY = new Date().getFullYear(), calM = new Date().getMonth(), calSel = isoToday();
+function consOf(t){
+  const sn = t.school.toLowerCase(), pn = t.program.toLowerCase();
+  let any = "";
+  for (const p of programs) {
+    const s = p.schools.find(x => x.name.toLowerCase() === sn);
+    if (s && s.consultant) { if (p.name.toLowerCase() === pn) return s.consultant; any = any || s.consultant; }
+  }
+  return any || "Unassigned";
+}
+function calItems(){
+  const c = $("cc").value;
+  return (DATA.__targets || []).filter(t => t.open || t.close).map(t => ({...t, cons: consOf(t)})).filter(t => (!c || t.cons === c) && inBranch(t.cons));
+}
+function evOn(items, d){
+  const out = [];
+  items.forEach(t => {
+    if (t.open && t.close) { if (d < t.open || d > t.close) return; out.push({t, k: d === t.close ? "close" : d === t.open ? "open" : "run"}); }
+    else if (t.close && d === t.close) out.push({t, k: "close"});
+    else if (t.open && d === t.open) out.push({t, k: "open"});
+  });
+  return out;
+}
+const fmt = d => new Date(d + "T00:00:00").toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+function dayPanel(items){
+  const canDone = !!ME && (ME.role === "admin" || ME.role === "branch_admin");
+  const ev = evOn(items, calSel), bk = bookingsOn(calSel), c = $("cc").value, br = $("cb").value, n = ev.length + bk.length;
+  const kl = {close: ["Closes", "background:#c8423f;color:#fff"], open: ["Opens", "background:#9a79df;color:#fff"], run: ["In progress", "background:#f3d9c2;color:#6b3a14"]};
+  const sh = t => `<h3 style="margin:16px 0 8px;font-size:14px">${t}</h3>`;
+  const short = arr => esc((arr || []).map(v => v.split(" › ").pop()).join(", ")) || "–";
+  let h = `<h3 style="margin:18px 0 8px;color:var(--mar)">${esc(fmt(calSel))} · ${n ? '<span style="color:#c8423f">Busy (' + n + ')</span>' : '<span style="color:#2f9e77">Free</span>'}${c ? " · " + esc(c) : br ? " · " + esc(br) + " branch" : ""}</h3>`;
+  if (calSel >= isoToday()) h += '<p style="margin:0 0 6px"><button id="cbook" style="margin:0">+ Book a schedule</button></p>';
+  if (bk.length) h += sh("Booked schedules") + '<div class="scroll"><table><tr><th>Shift / time</th><th>School</th><th>Consultant</th><th>Agenda</th><th>Sub programs / service</th><th>Resources</th><th>Participation</th><th>Status</th><th></th></tr>' +
+    bk.map(b => `<tr><td><b>${esc(b.shift)}</b><br>${esc(b.time)}</td><td>${esc(b.school)}</td><td>${esc(b.consultant)}</td><td>${esc((b.programs || []).join(", "))}</td><td>${short(b.subs)}</td><td>${esc(b.resources) || "–"}</td><td>${esc((b.participation || []).join(", ")) || "–"}</td><td><span class="chip" style="${b.status === "Done" ? "background:#2f9e77;color:#fff" : "background:#ffe69a;color:#6b5200"}">${b.status === "Done" ? "Done" : "Booked"}</span></td><td style="white-space:nowrap">${b.invite ? `<a class="ghost" href="${esc(b.invite)}" target="_blank" rel="noopener">Invitation</a>` : `<button class="ghost" data-inv="${esc(b.id)}" style="margin:0 6px 0 0">Make invitation</button>`}${canDone ? `<button class="ghost" data-st="${esc(b.id)}" data-to="${b.status === "Done" ? "Booked" : "Done"}" style="margin:0 6px 0 0">${b.status === "Done" ? "Reopen" : "Mark done"}</button>` : ""}<button class="ghost" data-del="${esc(b.id)}" style="margin:0">Delete</button></td></tr>`).join("") + "</table></div>";
+  if (ev.length) h += sh("Target dates") + '<div class="scroll"><table><tr><th>School</th><th>Program</th><th>Consultant</th><th>Type</th><th>Discussion</th><th>Dates</th></tr>' +
+    ev.map(e => `<tr><td>${esc(e.t.school)}</td><td>${esc(e.t.program)}</td><td>${esc(e.t.cons)}</td><td><span class="chip" style="${kl[e.k][1]}">${kl[e.k][0]}</span></td><td style="min-width:180px;max-width:320px">${esc(e.t.discussion) || "–"}</td><td>${esc(e.t.open) || "–"} → ${esc(e.t.close) || "–"}</td></tr>`).join("") + "</table></div>";
+  if (!n) h += '<p class="sub">Nothing scheduled on this day for this selection.</p>';
+  $("cday").innerHTML = h;
+}
+function cellStyle(ev, bk){
+  if (bk.length) return bk.every(b => b.status === "Done") ? ' style="background:#bfe8cf;border-color:#2f9e77"' : ' style="background:#ffe69a;border-color:#e0b100"';
+  return ev.length ? ` style="background:rgba(154,121,223,${Math.min(.1 + .08 * ev.length, .35)})"` : "";
+}
+function calendarView(){
+  if (ME && ME.role !== "admin") { $("cb").style.display = "none"; $("cb").value = ME.role === "branch_admin" ? (ME.branch || "") : ""; }
+  const br = $("cb").value, sel = $("cc"), v = sel.value, known = [...BRANCH.Kathmandu, ...BRANCH.Itahari], oth = new Set();
+  programs.forEach(p => p.schools.forEach(x => { if (x.consultant && !known.some(k => k.toLowerCase() === x.consultant.toLowerCase())) oth.add(x.consultant); }));
+  const og = (l, arr) => arr.length ? `<optgroup label="${l}">${arr.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("")}</optgroup>` : "";
+  sel.innerHTML = '<option value="">All consultants</option>' + (br ? og(br, BRANCH[br]) : og("Kathmandu branch", BRANCH.Kathmandu) + og("Itahari branch", BRANCH.Itahari) + og("Other", [...oth].sort()));
+  sel.value = v;
+  if (ME && ME.role === "consultant") { sel.innerHTML = '<option value="">My schedule</option>'; sel.value = ""; }
+  const items = calItems(), first = new Date(calY, calM, 1), days = new Date(calY, calM + 1, 0).getDate(), z = n => String(n).padStart(2, "0"), today = isoToday();
+  $("cmon").textContent = first.toLocaleDateString(undefined, {month: "long", year: "numeric"});
+  let h = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => `<div class="ch">${d}</div>`).join("");
+  for (let i = 0; i < first.getDay(); i++) h += '<div class="cd off"></div>';
+  for (let d = 1; d <= days; d++) {
+    const iso = calY + "-" + z(calM + 1) + "-" + z(d), ev = evOn(items, iso), bk = bookingsOn(iso), n = ev.length + bk.length;
+    const cl = ev.some(e => e.k === "close"), op = ev.some(e => e.k === "open");
+    h += `<div class="cd${iso === today ? " today" : ""}${iso === calSel ? " sel" : ""}" data-d="${iso}"${cellStyle(ev, bk)}><span class="dn">${d}</span>${n ? `<span class="cn">${n}</span>` : ""}<span class="dots">${cl ? '<i style="background:#c8423f"></i>' : ""}${op ? '<i style="background:#9a79df"></i>' : ""}${bk.length ? `<i style="background:${bk.every(b => b.status === "Done") ? "#2f9e77" : "#e0b100"}"></i>` : ""}</span></div>`;
+  }
+  $("cgrid").innerHTML = h;
+  dayPanel(items);
+}
+$("cgrid").onclick = e => { const c = e.target.closest("[data-d]"); if (c) { calSel = c.dataset.d; calendarView(); if (calSel >= isoToday()) openBook(calSel); } };
+$("cprev").onclick = () => { calM--; if (calM < 0) { calM = 11; calY--; } calendarView(); };
+$("cnext").onclick = () => { calM++; if (calM > 11) { calM = 0; calY++; } calendarView(); };
+$("ctod").onclick = () => { const d = new Date(); calY = d.getFullYear(); calM = d.getMonth(); calSel = isoToday(); calendarView(); };
+$("cc").onchange = calendarView;
+$("cb").onchange = () => { $("cc").value = ""; calendarView(); };
+
+
+// ===== Booking schedules =====
+const BRANCH = {
+  Kathmandu: ["Raju Ghale", "Pasang Sherpa", "Samaldip Rai", "Sulab Dhakal", "Sarthak Kharel", "Rabin Sunar"],
+  Itahari: ["Sova Dahal", "Abishek Ghimimri", "Ishika Niraula", "Sachin Sarma", "Achyut Karki"]
+};
+const PARTICIPANTS = ["Principal", "All Educators", "EOMS", "DEO", "Informed educators", "DEL", "LCL", "DEL parents", "LCL Parents", "Others"];
+function inBranch(name){ const b = $("cb").value; return !b || BRANCH[b].some(n => n.toLowerCase() === String(name).toLowerCase()); }
+function bookingsOn(d){ const c = $("cc").value; return (DATA.__schedules || []).filter(b => b.date === d && (!c || b.consultant === c) && inBranch(b.consultant)); }
+
+const msVals = id => [...$(id).querySelectorAll("input:checked")].map(i => i.value);
+function msSum(id){
+  const el = $(id), v = msVals(id);
+  el.querySelector("summary").textContent = v.length ? v.length + " selected: " + v.map(x => x.split(" › ").pop()).join(", ") : el.dataset.ph;
+}
+function msSet(id, groups){
+  const el = $(id), keep = new Set(msVals(id));
+  el.querySelector(".msl").innerHTML = groups.map(g => (g[0] ? `<div class="mh">${esc(g[0])}</div>` : "") +
+    g[1].map(v => `<label><input type="checkbox" value="${esc(v)}"${keep.has(v) ? " checked" : ""}> ${esc(v.split(" › ").pop())}</label>`).join("")).join("") || '<div class="sub" style="padding:8px 0">Select a program first</div>';
+  msSum(id);
+}
+const msBox = (id, ph) => `<details class="ms" id="${id}" data-ph="${ph}"><summary>${ph}</summary><div class="msl"></div></details>`;
+function refreshSubs(){
+  const groups = msVals("f_ag").map(pn => { const p = programs.find(x => x.name === pn); return [pn, p ? p.steps.map(t => pn + " › " + t) : []]; });
+  msSet("f_sub", groups);
+}
+function openBook(date){
+  const schools = [...new Set(programs.flatMap(p => p.schools.map(s => s.name)))].sort((a, b) => a.localeCompare(b));
+  const grp = b => `<optgroup label="${b} branch">${BRANCH[b].map(n => `<option>${esc(n)}</option>`).join("")}</optgroup>`;
+  const cons = ME && ME.role === "consultant" ? `<option>${esc(ME.name)}</option>` : (ME && ME.role === "branch_admin" && BRANCH[ME.branch] ? [ME.branch] : ["Kathmandu", "Itahari"]).map(grp).join("");
+  $("bkf").innerHTML = `<h3>Book a schedule · ${esc(fmt(date))}</h3>
+    <div class="fl"><span>School</span><select id="f_school"><option value="">Select school…</option>${schools.map(n => `<option>${esc(n)}</option>`).join("")}</select></div>
+    <div class="fl"><span>1. Agenda (programs)</span>${msBox("f_ag", "Select programs…")}</div>
+    <div class="fl"><span>2. Sub programs / service</span>${msBox("f_sub", "Select sub programs…")}</div>
+        <div class="two"><div class="fl"><span>Shift</span><select id="f_shift"><option>First shift</option><option>Second shift</option></select></div>
+      <div class="fl"><span>3. Time</span><input id="f_time" placeholder="e.g. Starts at 01:30 PM"></div></div>
+    <div class="fl"><span>Nepali date (BS) for the invitation</span><input id="f_bs" placeholder="e.g. Ashoj 23, 2083 (leave empty to use the English date)"></div>
+    <div class="fl"><span>4. Resources</span><textarea id="f_res" rows="2" placeholder="Type the resources needed"></textarea></div>
+    <div class="fl"><span>5. Participation</span>${msBox("f_pa", "Select participants…")}<input id="f_oth" placeholder="If you choose Others, type here" style="margin-top:8px"></div>
+    <div class="fl"><span>6. Name of consultant</span><select id="f_cons"><option value="">Select consultant…</option>${cons}</select></div>
+    <div id="f_msg" class="sub" style="font-weight:600"></div>
+    <div class="acts"><button id="f_save">Book schedule</button><button class="ghost" id="f_cancel">Cancel</button></div>`;
+  $("bkf").dataset.date = date;
+  msSet("f_ag", [[null, programs.map(p => p.name)]]); refreshSubs(); msSet("f_pa", [[null, PARTICIPANTS]]);
+  const c = $("cc").value; if (c && [...$("f_cons").options].some(o => o.value === c)) $("f_cons").value = c;
+  if (ME && ME.role === "consultant") $("f_cons").value = ME.name;
+  $("bk").showModal();
+}
+function bkConflict(b, all){
+  const day = all.filter(x => x.date === b.date), mine = day.filter(x => x.consultant === b.consultant);
+  if (mine.some(x => x.shift === b.shift)) return b.consultant + " already has a " + b.shift.toLowerCase() + " booking on this date.";
+  if (mine.length >= 2) return b.consultant + " already has 2 schedules on this date.";
+  const bp = new Set(b.programs), clash = day.find(x => x.school === b.school && x.shift === b.shift && x.consultant !== b.consultant && (x.programs || []).some(p => bp.has(p)));
+  if (clash) return "At " + b.school + " in the " + b.shift.toLowerCase() + ", " + clash.consultant + " already has " + clash.programs.filter(p => bp.has(p)).join(", ") + ". Two consultants can share a school and shift only with different programs.";
+  return "";
+}
+$("bkf").addEventListener("change", e => {
+  const m = e.target.closest(".ms"); if (!m) return;
+  msSum(m.id); if (m.id === "f_ag") refreshSubs();
+});
+$("bkf").addEventListener("click", async e => {
+  if (e.target.closest("#f_cancel")) { $("bk").close(); return; }
+  if (!e.target.closest("#f_save")) return;
+  const msg = (t, ok) => { $("f_msg").textContent = t; $("f_msg").style.color = ok ? "#2f9e77" : "#c8423f"; };
+  const oth = $("f_oth").value.trim();
+  const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), bs: $("f_bs").value.trim(), school: $("f_school").value, consultant: $("f_cons").value,
+    programs: msVals("f_ag"), subs: msVals("f_sub"), services: [], status: "Booked", resources: $("f_res").value.trim(),
+    participation: msVals("f_pa").map(v => v === "Others" && oth ? "Others: " + oth : v)};
+  if (!b.school) return msg("Please choose a school.");
+  if (!b.programs.length) return msg("Please choose at least one program in Agenda.");
+  if (!b.time) return msg("Please type the time.");
+  if (!b.consultant) return msg("Please choose the consultant.");
+  const bad = bkConflict(b, DATA.__schedules || []); if (bad) return msg(bad);
+  msg("Booking…", true);
+  const j = await post({action: "saveSchedule", row: b});
+  if (!j.ok) return msg(j.error || "Could not book. Please try again.");
+  b.id = j.id; b.invite = j.invite || ""; (DATA.__schedules = DATA.__schedules || []).push(b);
+  if (j.invite_error) alert("Booked, but the invitation could not be created yet: " + j.invite_error);
+  $("bk").close(); calendarView();
+});
+$("bk").addEventListener("click", e => { if (e.target === $("bk")) $("bk").close(); });
+$("cday").onclick = async e => {
+  if (e.target.closest("#cbook")) { openBook(calSel); return; }
+  const iv = e.target.closest("[data-inv]");
+  if (iv) {
+    iv.textContent = "Creating…";
+    const j = await post({action: "makeInvitation", id: iv.dataset.inv});
+    if (!j.ok) { alert(j.error || "Could not create the invitation."); calendarView(); return; }
+    const b = (DATA.__schedules || []).find(x => x.id === iv.dataset.inv); if (b) b.invite = j.invite;
+    calendarView(); return;
+  }
+  const st = e.target.closest("[data-st]");
+  if (st && !(ME && (ME.role === "admin" || ME.role === "branch_admin"))) return;
+  if (st) {
+    const j = await post({action: "setScheduleStatus", id: st.dataset.st, status: st.dataset.to});
+    if (!j.ok) { alert(j.error || "Could not update the status."); return; }
+    const b = (DATA.__schedules || []).find(x => x.id === st.dataset.st); if (b) b.status = st.dataset.to;
+    calendarView(); return;
+  }
+  const d = e.target.closest("[data-del]");
+  if (d && confirm("Delete this booked schedule?")) {
+    const j = await post({action: "deleteSchedule", id: d.dataset.del});
+    if (!j.ok) { alert(j.error || "Could not delete."); return; }
+    DATA.__schedules = (DATA.__schedules || []).filter(x => x.id !== d.dataset.del); calendarView();
+  }
+};
+
+
+// ===== Opening screen + sound =====
+$("sbLogo").src = $("spLogo").src;
+let sndOn = true; try { sndOn = localStorage.getItem("tk_snd") !== "off"; } catch (e) {}
+let actx = null;
+function chime(){
+  if (!sndOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    const t0 = actx.currentTime;
+    [[523.25, 0], [659.25, .14], [783.99, .28], [1046.5, .44]].forEach(([f, d]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0 + d); g.gain.linearRampToValueAtTime(.18, t0 + d + .03); g.gain.exponentialRampToValueAtTime(.0001, t0 + d + .9);
+      o.connect(g); g.connect(actx.destination); o.start(t0 + d); o.stop(t0 + d + 1);
+    });
+  } catch (e) {}
+}
+document.addEventListener("pointerdown", () => { if (actx && actx.state === "suspended") actx.resume(); });
+$("spSnd").textContent = sndOn ? "🔊 Sound on" : "🔇 Sound off";
+$("spSnd").onclick = () => {
+  sndOn = !sndOn; try { localStorage.setItem("tk_snd", sndOn ? "on" : "off"); } catch (e) {}
+  $("spSnd").textContent = sndOn ? "🔊 Sound on" : "🔇 Sound off";
+  if (sndOn) chime();
+};
+const splashT0 = Date.now(), spMsgs = ["Connecting to your Google Sheet…", "Loading programs and schools…", "Preparing your calendar…"];
+let spI = 0; const spTimer = setInterval(() => { if (!splashDone.did) $("spMsg").textContent = spMsgs[++spI % spMsgs.length]; }, 1500);
+function splashDone(ok){
+  if (splashDone.did) return; splashDone.did = true; clearInterval(spTimer);
+  $("spMsg").textContent = ok ? "Ready!" : "Opening the dashboard…";
+  const wait = Math.max(0, 2000 - (Date.now() - splashT0));
+  setTimeout(() => { if (ok) chime(); $("splash").classList.add("hide"); setTimeout(() => $("splash").remove(), 800); }, wait + 250);
+}
+setTimeout(() => splashDone(false), 25000);
+
+$("sbmode").onchange = () => renderPies(sbActive);
+
+// ===== Dashboard home (glass layout) =====
+let ovCharts = [], ovState = null;
+const DONEC = "#9a79df", PARTC = "#ee8f6e", NOTC = "#8dbbf0", AVC = ["#9a79df", "#ee8f6e", "#5da2ea", "#e0a93b", "#4fb79a"];
+const ini = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+const av = (n, i) => `<span class="av" style="background:${AVC[(i || 0) % AVC.length]}" title="${esc(n)}">${esc(ini(n))}</span>`;
+function schoolSteps(school, progNames){
+  let d = 0, t = 0, sc = 0, n = 0;
+  programs.forEach(p => {
+    if (progNames && progNames.length && !progNames.includes(p.name)) return;
+    const s = p.schools.find(x => x.name.toLowerCase() === school.toLowerCase()); if (!s) return;
+    t += p.steps.length; s.vals.forEach(v => { if (score(v) === 1) d++; }); sc += s.sc; n++;
+  });
+  return {d, t, v: n ? sc / n : 0};
+}
+function renderOverview(st, board){
+  ovCharts.forEach(c => c.destroy()); ovCharts = [];
+  const {active, names, all} = st, total = all[0] + all[1] + all[2], today = isoToday(), pc = i => total ? Math.round(all[i] / total * 100) : 0;
+  $("stats").innerHTML = `<span class="pill"><b>${names.length}</b> schools</span><span class="pill"><b>${active.length}</b> programs</span><span class="pill"><b>${all[0]} / ${total}</b> steps done</span><span class="pill soft">${esc(st.deltaTxt)}</span>`;
+  const up = (DATA.__schedules || []).filter(b => b.date >= today).sort((a, b) => a.date.localeCompare(b.date) || a.shift.localeCompare(b.shift)).slice(0, 3);
+  let cards;
+  if (up.length) {
+    $("ftitle").textContent = up[0].date === today ? "Today's schedule" : "Upcoming schedule";
+    cards = up.map((b, i) => { const ss = schoolSteps(b.school, b.programs);
+      return `<div class="fc c${i + 1}" data-go="cal"><span class="fchip">${b.date === today ? "Today" : esc(b.date)} · ${esc(b.shift)}</span><div class="ft">${esc(b.programs[0] || "Schedule")}${b.programs.length > 1 ? ` <small>+${b.programs.length - 1} more</small>` : ""}</div><div class="fs">${esc(b.school)}</div><div class="fa">${av(b.consultant, i)}<span class="fcn">${esc(b.consultant)}</span></div><div class="fp"><i><b style="width:${Math.round(ss.v * 100)}%"></b></i><span>${ss.d}/${ss.t}</span></div></div>`; });
+  } else {
+    $("ftitle").textContent = "Programs in focus";
+    cards = [...active].sort((a, b) => b.pct - a.pct).slice(0, 3).map((p, i) => {
+      const cs = [...new Set(p.schools.map(x => x.consultant).filter(Boolean))].slice(0, 3);
+      return `<div class="fc c${i + 1}" data-go="pr"><span class="fchip">Program</span><div class="ft">${esc(p.name)}</div><div class="fs">${p.schools.length} schools</div><div class="fa">${cs.map((c, j) => av(c, j)).join("")}</div><div class="fp"><i><b style="width:${Math.round(p.pct * 100)}%"></b></i><span>${p.counts[0]}/${p.counts[0] + p.counts[1] + p.counts[2]}</span></div></div>`; });
+  }
+  $("fcards").innerHTML = cards.join("") || '<p class="sub">No data yet.</p>';
+  const col = [DONEC, PARTC, NOTC], lab = ["Done", "Partly done", "Not started"];
+  $("rtot").textContent = "Total steps " + total;
+  $("rleg").innerHTML = lab.map((l, i) => `<li><i style="background:${col[i]}"></i><div><span>${l}</span><b>${pc(i)}%</b></div></li>`).join("");
+  ovCharts.push(new Chart($("rring"), {type: "doughnut",
+    data: {datasets: [0, 1, 2].map(i => ({data: [pc(i), 100 - pc(i)], backgroundColor: [col[i], "rgba(125,115,175,.12)"], borderWidth: 0, borderRadius: 30}))},
+    options: {cutout: "34%", maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {filter: i => i.dataIndex === 0, callbacks: {label: c => lab[c.datasetIndex] + ": " + c.raw + "% (" + all[c.datasetIndex] + " steps)"}}}}}));
+  const consOf2 = n => { for (const p of programs) { const s = p.schools.find(x => x.name === n); if (s && s.consultant) return s.consultant; } return ""; };
+  $("rank").innerHTML = board.slice(0, 4).map((b, i) => `<div class="rk2">${av(b.n, i)}<div><b>${esc(b.n)}</b><small>${esc(consOf2(b.n)) || "No consultant yet"}</small></div><span class="pts">${pct(b.v)}</span></div>`).join("") || '<p class="sub">No schools yet.</p>';
+  const tp = [...active].sort((a, b) => b.pct - a.pct).slice(0, 6), pat = (() => { const c = document.createElement("canvas"); c.width = c.height = 8; const x = c.getContext("2d"); x.strokeStyle = "rgba(120,115,160,.4)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(0, 8); x.lineTo(8, 0); x.stroke(); return x.createPattern(c, "repeat"); })();
+  const vals = tp.map(p => Math.round(p.pct * 100));
+  ovCharts.push(new Chart($("trk"), {type: "bar",
+    data: {labels: tp.map(p => p.name.length > 9 ? p.name.slice(0, 8) + "…" : p.name), datasets: [
+      {label: "Remaining", data: tp.map(() => 100), backgroundColor: pat, borderRadius: 20, borderSkipped: false, grouped: false, order: 2, barPercentage: .62},
+      {label: "Progress", data: vals, backgroundColor: vals.map((_, i) => i % 2 ? "#c9d3ea" : PARTC), borderColor: "#fff", borderWidth: 3, borderRadius: 20, borderSkipped: false, grouped: false, order: 1, barPercentage: .62}]},
+    options: {maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {filter: i => i.datasetIndex === 1, callbacks: {title: i => tp[i[0].dataIndex].name, label: c => c.raw + "% complete"}}},
+      scales: {x: {grid: {display: false}, border: {display: false}, ticks: {font: {size: 10}}}, y: {display: false, min: 0, max: 100}}}}));
+  const soon = (DATA.__targets || []).filter(t => t.close && t.close >= today).sort((a, b) => a.close.localeCompare(b.close)).slice(0, 4);
+  $("soon").innerHTML = soon.map((t, i) => `<div class="sn"><span class="snic">${i + 1}</span><div><b>${esc(t.school)}</b><small>${esc(t.program)} · ${esc(t.close)}</small></div>${dueChip(t.close)}</div>`).join("") || '<p class="sub">No closing dates coming up.</p>';
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g && g.dataset.go) show(g.dataset.go); });
+$("newbk").onclick = () => { show("cal"); openBook(isoToday()); };
+
+
+// ===== Login, password and users =====
+$("lgLogo").src = $("spLogo").src;
+const lgMsg = (t, ok) => { const m = $("lg_msg"); m.textContent = t || ""; m.style.color = ok ? "#2f9e77" : "#c8423f"; };
+function lgView(v){ ["in", "f1", "f2"].forEach(k => { $("lgv_" + k).hidden = k !== v; }); lgMsg(""); }
+function showLogin(msg){ document.body.classList.add("locked"); $("login").classList.remove("hide"); lgView("in"); if (msg) lgMsg(msg); }
+const ROLE_LBL = {admin: "Super admin", branch_admin: "Branch admin", consultant: "Consultant"};
+function meUi(){ const on = !!ME; $("me").style.display = on ? "flex" : "none"; $("who").textContent = on ? (ME.name || ME.email) + " · " + (ROLE_LBL[ME.role] || ME.role) : ""; $("meName").textContent = on ? (ME.name || ME.email) + " · " + (ROLE_LBL[ME.role] || ME.role) + (ME.branch ? " · " + ME.branch : "") : ""; $("navUsr").style.display = on && (ME.role === "admin" || ME.role === "branch_admin") ? "" : "none"; }
+function signOut(msg){
+  TOK = ""; ME = null; DATA = {};
+  try { localStorage.removeItem("te_tok"); sessionStorage.removeItem("te_tok"); } catch (e) {}
+  meUi(); showLogin(typeof msg === "string" ? msg : "");
+}
+$("lgf").onsubmit = async e => {
+  e.preventDefault(); lgMsg("Signing in…", true); $("lg_go").disabled = true;
+  const j = await apiPost({action: "login", email: $("lg_e").value.trim(), password: $("lg_p").value});
+  $("lg_go").disabled = false;
+  if (!j.ok) return lgMsg(j.error || "Could not sign in.");
+  TOK = j.token; ME = j.user;
+  try { ($("lg_r").checked ? localStorage : sessionStorage).setItem("te_tok", TOK); } catch (x) {}
+  $("lg_p").value = ""; $("login").classList.add("hide"); document.body.classList.remove("locked"); lgMsg(""); meUi(); show("ov"); load();
+};
+$("lg_fg").onclick = e => { e.preventDefault(); $("lg_fe").value = $("lg_e").value; lgView("f1"); };
+$("lg_fb").onclick = e => { e.preventDefault(); lgView("in"); };
+$("lg_fb2").onclick = e => { e.preventDefault(); lgView("in"); };
+$("lg_fs").onclick = async () => {
+  const em = $("lg_fe").value.trim(); if (!em) return lgMsg("Please enter your username or email.");
+  lgMsg("Sending the code…", true);
+  const j = await apiPost({action: "forgot", email: em});
+  if (!j.ok) return lgMsg(j.error || "Could not send the code.");
+  $("lg_re").value = em; lgView("f2"); lgMsg(j.message || "If this email is registered, a code has been sent.", true);
+};
+$("lg_rs").onclick = async () => {
+  const p1 = $("lg_np").value, p2 = $("lg_np2").value;
+  if (p1.length < 8) return lgMsg("The new password must be at least 8 characters.");
+  if (p1 !== p2) return lgMsg("The two passwords do not match.");
+  lgMsg("Saving…", true);
+  const j = await apiPost({action: "reset", email: $("lg_re").value.trim(), code: $("lg_c").value.trim(), password: p1});
+  if (!j.ok) return lgMsg(j.error || "Could not change the password.");
+  $("lg_np").value = $("lg_np2").value = $("lg_c").value = ""; lgView("in"); lgMsg("Password changed. Please sign in.", true);
+};
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-eye]"); if (!b) return;
+  const i = $(b.dataset.eye), reveal = i.type === "password";
+  i.type = reveal ? "text" : "password"; b.classList.toggle("on", reveal); b.setAttribute("aria-label", reveal ? "Hide password" : "Show password");
+});
+$("signout").onclick = () => { if (typeof gs !== "undefined" && gs && !confirm("A trip is still being tracked on this device. Sign out anyway? Your trip data stays on this device.")) return; signOut("You have signed out."); };
+$("chpw").onclick = () => { ["pw_o", "pw_n", "pw_n2"].forEach(i => { $(i).value = ""; }); $("pw_msg").textContent = ""; $("pwd").showModal(); };
+$("pw_cancel").onclick = () => $("pwd").close();
+$("pw_save").onclick = async () => {
+  const m = (t, ok) => { $("pw_msg").textContent = t; $("pw_msg").style.color = ok ? "#2f9e77" : "#c8423f"; };
+  const n1 = $("pw_n").value, n2 = $("pw_n2").value;
+  if (n1.length < 8) return m("The new password must be at least 8 characters.");
+  if (n1 !== n2) return m("The two new passwords do not match.");
+  m("Saving…", true);
+  const j = await post({action: "changePassword", old: $("pw_o").value, password: n1});
+  if (!j.ok) return m(j.error || "Could not change the password.");
+  m("Password changed ✓", true); setTimeout(() => $("pwd").close(), 900);
+};
+async function loadUsers(){
+  if (!ME || !["admin", "branch_admin"].includes(ME.role)) return;
+  const sup = ME.role === "admin"; $("u_rolebox").style.display = sup ? "" : "none"; $("u_brbox").style.display = sup ? "" : "none";
+  const j = await post({action: "listUsers"});
+  if (!j.ok) { $("u_msg").style.color = "#c8423f"; $("u_msg").textContent = j.error || ""; return; }
+  $("u_tab").innerHTML = '<tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Branch</th><th>Status</th><th></th></tr>' + j.users.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.username) || "–"}</td><td>${esc(u.email)}</td><td>${esc(ROLE_LBL[u.role] || u.role)}</td><td>${esc(u.branch) || "–"}</td><td><span class="chip ${u.status === "Active" ? "ok" : ""}">${esc(u.status)}</span></td><td style="white-space:nowrap"><button class="ghost sm" data-ust="${esc(u.email)}" data-to="${u.status === "Active" ? "Disabled" : "Active"}">${u.status === "Active" ? "Disable" : "Enable"}</button> <button class="ghost sm" data-urp="${esc(u.email)}">Reset password</button></td></tr>`).join("");
+}
+$("u_add").onclick = async () => {
+  const email = $("u_e").value.trim(), name = $("u_n").value.trim(), m = $("u_msg");
+  if (!email) { m.style.color = "#c8423f"; m.textContent = "Enter the email address."; return; }
+  m.style.color = "#2f9e77"; m.textContent = "Adding…";
+  const j = await post({action: "addUser", email, name, username: $("u_u").value.trim(), role: $("u_r").value, branch: $("u_b").value});
+  if (!j.ok) { m.style.color = "#c8423f"; m.textContent = j.error || "Could not add the user."; return; }
+  m.textContent = (j.mailed ? "User added. A temporary password was emailed to " + email + "." : "User added, but the email could not be sent.") + " Username: " + j.username + ". Temporary password: " + j.temp;
+  $("u_e").value = $("u_n").value = $("u_u").value = ""; loadUsers();
+};
+$("u_tab").onclick = async e => {
+  const m = $("u_msg"), st = e.target.closest("[data-ust]"), rp = e.target.closest("[data-urp]");
+  if (st) {
+    const j = await post({action: "setUserStatus", email: st.dataset.ust, status: st.dataset.to});
+    if (!j.ok) { m.style.color = "#c8423f"; m.textContent = j.error || "Could not update."; return; }
+    loadUsers();
+  } else if (rp && confirm("Create a new temporary password for " + rp.dataset.urp + " and email it?")) {
+    const j = await post({action: "resetUserPassword", email: rp.dataset.urp});
+    if (!j.ok) { m.style.color = "#c8423f"; m.textContent = j.error || "Could not reset."; return; }
+    m.style.color = "#2f9e77"; m.textContent = (j.mailed ? "A new temporary password was emailed to " : "Email could not be sent to ") + rp.dataset.urp + ". Temporary password: " + j.temp;
+  }
+};
+
+// ===== Trip Tracker (live GPS) =====
+const pin = (t, bg) => L.divIcon({className: "", html: `<div class="mk" style="background:${bg}">${t}</div>`, iconSize: [30, 30], iconAnchor: [15, 15]});
+const hhmm = d => d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+const mins = m => m >= 60 ? Math.floor(m / 60) + " h " + Math.round(m % 60) + " min" : Math.round(m) + " min";
+const branchOf = c => BRANCH.Kathmandu.includes(c) ? "Kathmandu" : BRANCH.Itahari.includes(c) ? "Itahari" : "";
+const MODE_LBL = {bike: "Bike", car: "Car", bus: "Bus"};
+const DWELL_M = 30, DWELL_MS = 5 * 60000, G_KEY = "te_track", G_PEND = "te_track_pending";
+let gpick = null, gpickMk = null, kmap = null, klay = null, kme = null, kline = null, gs = null, gdest = [], gwid = null, gtimer = null, gwake = null, gfound = [], gfrom = null;
+const isoOf = ts => { const d = new Date(ts), z = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()); };
+function hav(a, b){ const R = 6371000, r = x => x * Math.PI / 180, dLa = r(b.lat - a.lat), dLo = r(b.lng - a.lng), q = Math.sin(dLa / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(q)); }
+function encN(n){ n = n < 0 ? ~(n << 1) : n << 1; let o = ""; while (n >= 32) { o += String.fromCharCode((32 | (n & 31)) + 63); n >>= 5; } return o + String.fromCharCode(n + 63); }
+function encPoly(pts){ let o = "", pl = 0, pg = 0; pts.forEach(p => { const la = Math.round(p[0] * 1e5), lo = Math.round(p[1] * 1e5); o += encN(la - pl) + encN(lo - pg); pl = la; pg = lo; }); return o; }
+function decPoly(str){ let i = 0, la = 0, lo = 0; const o = []; while (i < str.length) { let b, sh = 0, r = 0; do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32); la += (r & 1) ? ~(r >> 1) : (r >> 1); sh = 0; r = 0; do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32); lo += (r & 1) ? ~(r >> 1) : (r >> 1); o.push([la / 1e5, lo / 1e5]); } return o; }
+const hhmmss = d => d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+const localStr = ts => { const d = new Date(ts), z = n => String(n).padStart(2, "0"); return isoOf(ts) + " " + z(d.getHours()) + ":" + z(d.getMinutes()) + ":" + z(d.getSeconds()); };
+const placeCache = {};
+function knownPlace(lat, lng){
+  let best = null, bd = 120; const here = {lat, lng};
+  const chk = (name, q) => { if (!q || q.lat == null) return; const d = hav(here, q); if (d < bd) { bd = d; best = name; } };
+  Object.keys(DATA.__kv || {}).forEach(k => { if (k.indexOf("loc:school:") === 0) chk(k.slice(11), DATA.__kv[k]); });
+  if (ME) { chk("Home (" + ME.name + ")", (DATA.__kv || {})["loc:home:" + ME.name]); const br = branchOf(ME.name) || ME.branch; if (br) chk(br + " office", (DATA.__kv || {})["loc:office:" + br]); }
+  (gs ? gs.dests : gdest).forEach(x => chk(x.n, x));
+  return best;
+}
+async function poiName(lat, lng){
+  const t = ["amenity", "shop", "office", "tourism", "leisure", "building"].map(k => `nwr(around:60,${lat},${lng})["name"]["${k}"];`).join("");
+  const ac = typeof AbortController !== "undefined" ? new AbortController() : null; if (ac) setTimeout(() => ac.abort(), 7000);
+  try {
+    const r = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent("[out:json][timeout:8];(" + t + ");out center 25;"), ac ? {signal: ac.signal} : undefined), j = await r.json();
+    let best = null, bd = 1e9;
+    (j.elements || []).forEach(e => { const la = e.lat != null ? e.lat : e.center && e.center.lat, lo = e.lon != null ? e.lon : e.center && e.center.lon, tg = e.tags || {}; if (la == null || !tg.name) return; const d = hav({lat, lng}, {lat: la, lng: lo}) - (tg.building && !tg.amenity && !tg.shop && !tg.office ? 25 : 0); if (d < bd) { bd = d; best = tg["name:en"] || tg.name; } });
+    return best || "";
+  } catch (e) { return ""; }
+}
+async function placeInfo(lat, lng){
+  const key = lat.toFixed(4) + "," + lng.toFixed(4); if (placeCache[key]) return placeCache[key];
+  let name = knownPlace(lat, lng) || "", addr = "";
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&namedetails=1&lat=" + lat + "&lon=" + lng), j = await r.json(), a = j.address || {};
+    if (!name) name = (j.namedetails && (j.namedetails["name:en"] || j.namedetails.name)) || "";
+    const road = a.road || a.pedestrian || a.footway || a.path || "", area = a.neighbourhood || a.suburb || a.city_district || a.village || a.town || a.city || "";
+    addr = [road, area].filter(Boolean).join(", ") || (j.display_name || "").split(",").slice(0, 3).join(",").trim();
+  } catch (e) {}
+  if (!name) name = await poiName(lat, lng);
+  if (!name) name = addr || lat.toFixed(5) + ", " + lng.toFixed(5);
+  const out = {name, addr: addr && addr !== name ? addr : ""}; placeCache[key] = out; return out;
+}
+const placeHtml = (n, a) => "<b>" + esc(n) + "</b>" + (a ? "<br><small>" + esc(a) + "</small>" : "");
+const getFix = () => new Promise(res => { if (typeof navigator !== "undefined" && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => res({lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, ts: p.timestamp || Date.now()}), () => res(null), {enableHighAccuracy: true, timeout: 12000, maximumAge: 0}); else res(null); });
+const gMsg = (t, ok) => { const m = $("g_msg"); m.textContent = t || ""; m.style.color = ok ? "#2f9e77" : "#c8423f"; };
+function initK(){
+  if (kmap) return;
+  if (!window.L) { gMsg("The map could not load. Check your internet connection and refresh."); return; }
+  kmap = L.map("gmap").setView([27.7, 85.32], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19, attribution: "© OpenStreetMap contributors"}).addTo(kmap);
+  klay = L.layerGroup().addTo(kmap); kline = L.polyline([], {color: "#9a79df", weight: 5, opacity: .9}).addTo(kmap);
+  kmap.on("click", e => gPick(e.latlng));
+}
+function gDestHtml(){
+  $("g_dests").innerHTML = gdest.length ? gdest.map((x, i) => `<div class="stp"><i class="dot" style="background:#ee8f6e;cursor:default"></i><span>${i + 1}. ${esc(x.n)}</span><b><button class="ghost sm" data-gx="${i}">×</button></b></div>`).join("") : '<p class="sub" style="margin:0 0 8px">No places added yet.</p>';
+  if (kmap) { klay.clearLayers(); gdest.forEach((x, i) => L.marker([x.lat, x.lng], {icon: pin(String(i + 1), "#ee8f6e")}).bindTooltip(x.n).addTo(klay)); }
+}
+async function gLocate(){
+  if (gs) return;
+  $("g_from").textContent = "Locating…";
+  const f = await getFix();
+  if (!f) { $("g_from").textContent = "Location not available. Allow location access in your browser."; return; }
+  const pi = await placeInfo(f.lat, f.lng); gfrom = {lat: f.lat, lng: f.lng, name: pi.name, addr: pi.addr}; $("g_from").innerHTML = placeHtml(pi.name, pi.addr);
+  initK();
+  if (kmap) { if (kme) kme.setLatLng([f.lat, f.lng]); else kme = L.marker([f.lat, f.lng], {icon: pin("●", "#5da2ea")}).addTo(kmap); kmap.setView([f.lat, f.lng], 15); }
+}
+async function gSearch(){
+  const q = $("g_q").value.trim(); if (!q) return;
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=5&q=" + encodeURIComponent(q + ", Nepal"));
+    gfound = await r.json();
+    $("g_r").innerHTML = gfound.length ? gfound.map((x, i) => `<button type="button" data-gf="${i}">${esc(x.display_name)}</button>`).join("") : '<button type="button" disabled>No place found. Try a landmark.</button>';
+  } catch (e) { $("g_r").innerHTML = '<button type="button" disabled>Search failed. Please try again.</button>'; }
+}
+function nearestDest(a){ let best = "", bd = 150; (gs ? gs.dests : []).forEach(x => { const d = hav(a, x); if (d < bd) { bd = d; best = x.n; } }); return best; }
+function gOpenStop(){
+  const o = {lat: gs.anchor.lat, lng: gs.anchor.lng, arrive: gs.anchor.ts, depart: 0, min: 0, name: "Finding the place name…", addr: "", dest: nearestDest(gs.anchor)};
+  placeInfo(o.lat, o.lng).then(p => { o.name = p.name; o.addr = p.addr; gUi(); });
+  return o;
+}
+function gCloseStop(dep){
+  if (!gs) return;
+  if (!gs.open && gs.anchor && dep - gs.anchor.ts >= DWELL_MS) gs.open = gOpenStop();   // a stop whose fixes arrived late
+  if (!gs.open) return;
+  const o = gs.open; o.depart = dep || Date.now(); o.min = Math.round((o.depart - o.arrive) / 60000); gs.stops.push(o); gs.open = null;
+}
+function gFeed(lat, lng, acc, ts, spd){
+  if (!gs || acc > 80) return;
+  const p = {lat, lng, ts, acc}, pv = gs.prev;
+  if (pv) {
+    const d2 = hav(pv, p), dt2 = (ts - pv.ts) / 1000, moved = d2 >= Math.max(8, acc * .5);
+    if (dt2 > 0 && dt2 < 120 && d2 / dt2 * 3.6 > 160) return;            // impossible jump: ignore this fix
+    const kmh = spd != null && spd >= 0 ? spd * 3.6 : (moved && dt2 > 0 ? d2 / dt2 * 3.6 : 0);
+    gs.kmh = kmh; if (kmh > gs.maxKmh) gs.maxKmh = kmh; if (kmh > 2 && dt2 > 0 && dt2 < 120) gs.moveMs += ts - pv.ts;
+  }
+  gs.prev = p; gs.cur = p;
+  if (!gs.last) { gs.last = p; gs.pts.push([lat, lng, ts]); }
+  else { const d = hav(gs.last, p); if (d >= Math.max(8, acc * .5)) { gs.km += d / 1000; gs.last = p; gs.pts.push([lat, lng, ts]); } }
+  if (!gs.anchor) { gs.anchor = {lat, lng, ts}; gs.lastIn = ts; }
+  else if (hav(gs.anchor, p) < DWELL_M) gs.lastIn = ts;
+  else {
+    // left the spot: work out when the person really left (fixes can be sparse while standing still)
+    const dd = hav(gs.anchor, p), v = spd != null && spd > .5 ? spd : (pv && ts > pv.ts ? hav(pv, p) / ((ts - pv.ts) / 1000) : 0);
+    let dep = gs.lastIn; if (v > .5) dep = Math.max(gs.lastIn, ts - Math.min(dd / v * 1000, ts - gs.lastIn));
+    gCloseStop(dep); gs.anchor = {lat, lng, ts}; gs.lastIn = ts;
+  }
+}
+function gTick(){
+  if (!gs) return;
+  const now = Date.now();
+  if (!gs.open && gs.anchor && now - gs.anchor.ts >= DWELL_MS && now - gs.lastIn < 150000) gs.open = gOpenStop();
+  gUi(); if (now - (gs.saved || 0) > 15000) gSave();
+}
+function gSave(){ if (!gs) return; try { gs.saved = Date.now(); localStorage.setItem(G_KEY, JSON.stringify(gs)); } catch (e) {} }
+function gUi(){
+  $("g_mode").disabled = !!gs;
+  const st = $("g_stats");
+  if (!gs) { st.innerHTML = ""; $("g_stops").innerHTML = '<span class="sub">Stops are logged by themselves when you stay within 30 m for more than 5 minutes.</span>'; return; }
+  const c = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`, all = [...gs.stops, ...(gs.open ? [gs.open] : [])], ago = gs.cur ? Math.round((Date.now() - gs.cur.ts) / 1000) : null;
+  st.innerHTML = c("Started", hhmmss(new Date(gs.start))) + c("Time", mins((Date.now() - gs.start) / 60000)) + c("Distance", gs.km.toFixed(2) + " km") + c("Speed", Math.round(gs.kmh || 0) + " km/h") + c("Max speed", Math.round(gs.maxKmh) + " km/h") + c("Status", (gs.kmh || 0) > 2 ? "Moving" : "Standing still") + c("Stops", all.length) + c("GPS accuracy", gs.cur ? "±" + Math.round(gs.cur.acc) + " m" : "–") + c("Last GPS fix", ago === null ? "–" : (ago < 90 ? ago + " s ago" : mins(ago / 60) + " ago"));
+  $("g_stops").innerHTML = all.length ? all.map((x, i) => `<div class="stp"><span>${i + 1}. ${placeHtml(x.name, x.addr)}${x.dest ? "<br><small>Planned stop: " + esc(x.dest) + "</small>" : ""}<br><small>${hhmmss(new Date(x.arrive))} → ${x.depart ? hhmmss(new Date(x.depart)) : "now"} · ${mins(((x.depart || Date.now()) - x.arrive) / 60000)}</small></span></div>`).join("") : '<span class="sub">No stops yet.</span>';
+  if (kmap && gs.cur) { if (kme) kme.setLatLng([gs.cur.lat, gs.cur.lng]); else kme = L.marker([gs.cur.lat, gs.cur.lng], {icon: pin("●", "#5da2ea")}).addTo(kmap); kline.setLatLngs(gs.pts.map(q => [q[0], q[1]])); kmap.panTo([gs.cur.lat, gs.cur.lng]); }
+}
+async function gWake(){ try { if (typeof navigator !== "undefined" && navigator.wakeLock) gwake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+function gWatch(){
+  initK();
+  if (typeof navigator !== "undefined" && navigator.geolocation) gwid = navigator.geolocation.watchPosition(p => gFeed(p.coords.latitude, p.coords.longitude, p.coords.accuracy, p.timestamp || Date.now(), p.coords.speed), e => gMsg("GPS problem: " + e.message), {enableHighAccuracy: true, maximumAge: 0, timeout: 20000});
+  clearInterval(gtimer); gtimer = setInterval(gTick, 10000); gWake();
+}
+function gStopWatch(){
+  try { if (gwid !== null && navigator.geolocation) navigator.geolocation.clearWatch(gwid); } catch (e) {}
+  gwid = null; clearInterval(gtimer); try { if (gwake) gwake.release(); } catch (e) {} gwake = null;
+}
+async function gStart(){
+  if (gs) return gMsg("A trip is already running.");
+  if (!ME) return;
+  const clickTs = Date.now();                                  // the trip starts when the button is pressed
+  gMsg("Getting your GPS location…", true);
+  const f = await getFix(); if (!f) return gMsg("Could not read your GPS. Allow location access and try again.");
+  const pi = await placeInfo(f.lat, f.lng), pt = {lat: f.lat, lng: f.lng, ts: clickTs, acc: f.acc};
+  gs = {id: "K" + clickTs, user: ME.email, name: ME.name, mode: $("g_mode").value || "bike", start: clickTs, from: {lat: f.lat, lng: f.lng, name: pi.name, addr: pi.addr}, dests: gdest.map(x => ({...x})), pts: [[f.lat, f.lng, clickTs]], km: 0, maxKmh: 0, moveMs: 0, kmh: 0, stops: [], open: null, anchor: {lat: f.lat, lng: f.lng, ts: clickTs}, lastIn: clickTs, last: pt, prev: pt, cur: pt, saved: 0};
+  gWatch(); gSave(); gBanner(); gMsg("Trip started at " + hhmmss(new Date(clickTs)) + " from " + pi.name + " by " + MODE_LBL[gs.mode].toLowerCase() + " ✓", true); gUi();
+}
+function gModeUi(){ $("g_farebox").style.display = $("g_mode").value === "bus" ? "" : "none"; }
+async function gEnd(){
+  if (!gs) return gMsg("There is no trip running.");
+  let fare = null;
+  if (gs.mode === "bus") {
+    const v = $("g_fare").value.trim();
+    if (v === "" || isNaN(+v) || +v < 0) { gModeUi(); $("g_farebox").style.display = ""; $("g_fare").focus(); return gMsg("Enter the actual bus fare you paid (Rs.), then press End trip again."); }
+    fare = +v;
+  }
+  const end = Date.now(); gStopWatch();
+  gCloseStop(gs.cur && gs.anchor && hav(gs.anchor, gs.cur) < DWELL_M ? end : gs.lastIn || end);
+  gMsg("Finding the place names…", true);
+  const lastPt = gs.cur || gs.last || gs.from, ep = await placeInfo(lastPt.lat, lastPt.lng);
+  await Promise.all(gs.stops.map(x => /^Finding/.test(x.name) ? placeInfo(x.lat, x.lng).then(q => { x.name = q.name; x.addr = q.addr; }) : null));
+  const pts = gs.pts, step = Math.max(1, Math.ceil(pts.length / 1500)), slim = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
+  const pl = (n, a) => n + (a ? " (" + a + ")" : "");
+  const row = {id: gs.id, date: isoOf(gs.start), start: new Date(gs.start).toISOString(), end: new Date(end).toISOString(), startLocal: localStr(gs.start), endLocal: localStr(end),
+    mode: gs.mode || "bike", fare, durMin: Math.round((end - gs.start) / 60000), km: +gs.km.toFixed(2), avgKmh: gs.moveMs > 0 ? +(gs.km / (gs.moveMs / 3600000)).toFixed(1) : 0, maxKmh: +gs.maxKmh.toFixed(1),
+    from: gs.from, dests: gs.dests, startPlace: pl(gs.from.name || "", gs.from.addr), endPlace: pl(ep.name, ep.addr), endPt: {lat: +lastPt.lat.toFixed(6), lng: +lastPt.lng.toFixed(6), name: ep.name, addr: ep.addr},
+    stops: gs.stops.map(x => ({lat: +x.lat.toFixed(6), lng: +x.lng.toFixed(6), name: x.name, addr: x.addr, dest: x.dest, arrive: new Date(x.arrive).toISOString(), depart: new Date(x.depart).toISOString(), arriveLocal: localStr(x.arrive), departLocal: localStr(x.depart), min: x.min})), route: encPoly(slim)};
+  row.stopsText = row.stops.map((x, i) => (i + 1) + ". " + pl(x.name, x.addr) + " | " + x.arriveLocal.slice(11) + " to " + x.departLocal.slice(11) + " | " + x.min + " min").join("\n");
+  try { localStorage.setItem(G_PEND, JSON.stringify(row)); localStorage.removeItem(G_KEY); } catch (e) {}
+  gs = null; $("g_fare").value = ""; gUi(); gMsg("Saving the trip…", true);
+  await gSend(row);
+  gBanner(); gHistory();
+}
+async function gSend(row){
+  const j = await post({action: "saveTrack", row});
+  if (j.ok) {
+    try { localStorage.removeItem(G_PEND); } catch (e) {}
+    DATA.__tracks = (DATA.__tracks || []).filter(t => t.id !== row.id); DATA.__tracks.push({...row, name: ME.name, email: ME.email, branch: ME.branch || ""});
+    gMsg("Trip saved to your Google Sheet ✓ " + row.km + " km in " + mins(row.durMin) + ". From " + (row.from.name || "") + " to " + row.endPt.name + ".", true); return true;
+  }
+  gMsg((j.error || "Could not save the trip.") + " Your trip is kept on this device. Use “Send saved trip” to try again."); return false;
+}
+function gBanner(){
+  const b = $("g_banner"); if (!ME) { b.style.display = "none"; return; }
+  let live = null, pend = null;
+  try { const v = JSON.parse(localStorage.getItem(G_KEY) || "null"); if (v && v.user === ME.email) live = v; pend = JSON.parse(localStorage.getItem(G_PEND) || "null"); } catch (e) {}
+  if (gs) { b.style.display = "flex"; b.innerHTML = `<b>● Trip in progress</b><span>started ${hhmm(new Date(gs.start))} by ${(MODE_LBL[gs.mode] || "").toLowerCase()}. Keep this page open.</span>`; }
+  else if (live) { b.style.display = "flex"; b.innerHTML = `<b>● A trip is still open on this device</b><span>started ${hhmm(new Date(live.start))}</span><button id="g_resume" style="margin:0">Resume tracking</button><button class="ghost" id="g_discard" style="margin:0">Discard</button>`; }
+  else if (pend) { b.style.display = "flex"; b.innerHTML = `<b>A finished trip has not been saved yet</b><span>${pend.km} km</span><button id="g_resend" style="margin:0">Send saved trip</button>`; }
+  else b.style.display = "none";
+}
+$("g_banner").onclick = async e => {
+  if (e.target.closest("#g_resume")) { try { gs = JSON.parse(localStorage.getItem(G_KEY)); } catch (x) { gs = null; } if (gs) { gs.prev = null; gs.anchor = null; gs.dests = gs.dests || []; $("g_mode").value = gs.mode || "bike"; gModeUi(); gCloseStop(gs.lastIn); gWatch(); gBanner(); gUi(); gMsg("Tracking resumed.", true); } }
+  else if (e.target.closest("#g_discard")) { if (confirm("Discard this unfinished trip? Its data will be deleted from this device.")) { try { localStorage.removeItem(G_KEY); } catch (x) {} gBanner(); } }
+  else if (e.target.closest("#g_resend")) { let r = null; try { r = JSON.parse(localStorage.getItem(G_PEND)); } catch (x) {} if (r) { gMsg("Sending…", true); await gSend(r); gBanner(); gHistory(); } }
+};
+function gView(id){
+  const t = (DATA.__tracks || []).find(x => x.id === id); if (!t) return;
+  initK(); if (!kmap) return;
+  klay.clearLayers(); const pts = decPoly(t.route || "");
+  kline.setLatLngs(pts);
+  if (pts.length) { L.marker(pts[0], {icon: pin("S", "#5da2ea")}).bindTooltip("Start: " + ((t.from && t.from.name) || "")).addTo(klay); L.marker(pts[pts.length - 1], {icon: pin("E", "#26215c")}).bindTooltip("End: " + ((t.endPt && t.endPt.name) || "")).addTo(klay); }
+  (t.stops || []).forEach((x, i) => L.marker([x.lat, x.lng], {icon: pin(String(i + 1), "#d9534f")}).bindTooltip((x.name || x.addr || "") + " · " + x.min + " min").addTo(klay));
+  if (pts.length) kmap.fitBounds(pts, {padding: [40, 40]});
+  window.scrollTo(0, 0);
+}
+function gFiltered(){
+  const bv = $("g_fb").value, uv = $("g_fu").value, d1 = $("g_d1").value, d2 = $("g_d2").value;
+  return (DATA.__tracks || []).filter(t => (!bv || t.branch === bv) && (!uv || t.name === uv) && (!d1 || t.date >= d1) && (!d2 || t.date <= d2)).sort((a, b) => b.start.localeCompare(a.start));
+}
+const CCOL = {}, ccol = n => CCOL[n] || (CCOL[n] = AVC[Object.keys(CCOL).length % AVC.length]);
+function gPlaceGroups(trips){
+  const m = new Map();
+  const add = (lat, lng, name, addr, who, arrive, min) => {
+    if (lat == null || lng == null || !name && !addr) return;
+    const k = (+lat).toFixed(3) + "," + (+lng).toFixed(3); let g = m.get(k);
+    if (!g) { g = {lat: +lat, lng: +lng, names: {}, addr: addr || "", visits: 0, min: 0, who: new Set(), last: ""}; m.set(k, g); }
+    const n = name || addr; g.names[n] = (g.names[n] || 0) + 1; g.visits++; g.min += min || 0; g.who.add(who); if (arrive > g.last) g.last = arrive; if (addr && !g.addr) g.addr = addr;
+  };
+  trips.forEach(t => {
+    if (t.from) add(t.from.lat, t.from.lng, t.from.name, t.from.addr, t.name, t.start, 0);
+    (t.stops || []).forEach(x => add(x.lat, x.lng, x.name, x.addr, t.name, x.arrive, x.min));
+    if (t.endPt) add(t.endPt.lat, t.endPt.lng, t.endPt.name, t.endPt.addr, t.name, t.end, 0);
+  });
+  return [...m.values()].map(g => ({...g, name: Object.keys(g.names).sort((a, b) => g.names[b] - g.names[a])[0], who: [...g.who]})).sort((a, b) => b.visits - a.visits || b.min - a.min);
+}
+function gLegend(people){ $("g_leg").innerHTML = people.map(n => `<span><i style="background:${ccol(n)};border-radius:50%"></i>${esc(n)}</span>`).join(""); }
+function gShowPlaces(){
+  initK(); if (!kmap) return;
+  const trips = gFiltered(), groups = gPlaceGroups(trips); klay.clearLayers(); kline.setLatLngs([]);
+  groups.forEach(g => L.marker([g.lat, g.lng], {icon: pin(String(g.visits), ccol(g.who[0]))}).bindPopup(`<b>${esc(g.name)}</b>${g.addr && g.addr !== g.name ? "<br>" + esc(g.addr) : ""}<br>${g.visits} visit${g.visits > 1 ? "s" : ""} · ${mins(g.min)} spent<br>${esc(g.who.join(", "))}<br>Last: ${esc(localStr(new Date(g.last).getTime()))}`).addTo(klay));
+  gLegend([...new Set(groups.flatMap(g => g.who))]);
+  if (groups.length) kmap.fitBounds(groups.map(g => [g.lat, g.lng]), {padding: [40, 40], maxZoom: 16}); else gMsg("No places to show for this selection.");
+  window.scrollTo(0, 0);
+}
+function gShowRoutes(){
+  initK(); if (!kmap) return;
+  const trips = gFiltered(); klay.clearLayers(); kline.setLatLngs([]); const all = [];
+  trips.forEach(t => { const pts = decPoly(t.route || ""); if (pts.length) { all.push(...pts); L.polyline(pts, {color: ccol(t.name), weight: 4, opacity: .8}).bindTooltip(t.name + " · " + t.date + " · " + (+t.km).toFixed(1) + " km").addTo(klay); } });
+  gLegend([...new Set(trips.map(t => t.name))]);
+  if (all.length) kmap.fitBounds(all, {padding: [40, 40]}); else gMsg("No routes to show for this selection.");
+  window.scrollTo(0, 0);
+}
+function gHistory(){
+  if (!ME) return;
+  const all = (DATA.__tracks || []).slice(), isA = ME.role === "admin", isB = ME.role === "branch_admin";
+  $("g_flt").style.display = isA || isB ? "flex" : "none"; $("g_fb").style.display = isA ? "" : "none";
+  const bv = $("g_fb").value, users = [...new Set(all.filter(t => !bv || t.branch === bv).map(t => t.name))].sort(), uv = $("g_fu").value;
+  $("g_fu").innerHTML = '<option value="">All users</option>' + users.map(n => `<option>${esc(n)}</option>`).join(""); $("g_fu").value = users.includes(uv) ? uv : "";
+  const all2 = gFiltered(), rows = all2.slice(0, 40);
+  const fareSum = all2.filter(t => t.mode === "bus").reduce((a, t) => a + (+t.fare || 0), 0);
+  $("g_sum").textContent = all2.length ? all2.length + " trips · " + all2.reduce((a, t) => a + (+t.km || 0), 0).toFixed(1) + " km in total" + (fareSum ? " · bus fares Rs. " + fareSum.toFixed(0) : "") : "";
+  const nm = o => (o && o.name) || "–";
+  $("g_log").innerHTML = rows.length ? '<table><tr><th>Date</th><th>Name</th><th>Branch</th><th>Started at</th><th>From</th><th>Ended at</th><th>To</th><th>Time</th><th>Distance</th><th>Avg speed</th><th>Mode</th><th>Bus fare</th><th>Stops</th><th></th></tr>' + rows.map(t => `<tr><td>${esc(t.date)}</td><td>${esc(t.name)}</td><td>${esc(t.branch) || "–"}</td><td>${hhmmss(new Date(t.start))}</td><td style="white-space:normal;min-width:150px">${esc(nm(t.from))}</td><td>${hhmmss(new Date(t.end))}</td><td style="white-space:normal;min-width:150px">${esc(nm(t.endPt))}</td><td>${mins(t.durMin)}</td><td>${(+t.km).toFixed(1)} km</td><td>${t.avgKmh} km/h</td><td>${MODE_LBL[t.mode] || "–"}</td><td>${t.mode === "bus" && t.fare != null ? "Rs. " + (+t.fare).toFixed(0) + (t.km > 0 ? "<br><small>Rs. " + (t.fare / t.km).toFixed(1) + " per km</small>" : "") : "–"}</td><td style="white-space:normal;min-width:180px">${(t.stops || []).length ? (t.stops || []).map((x, i) => (i + 1) + ". " + esc(x.name || x.addr || "") + " (" + x.min + " min)").join("<br>") : "–"}</td><td><button class="ghost sm" data-gv="${esc(t.id)}">View route</button></td></tr>`).join("") + "</table>" : '<p class="sub" style="padding:12px">No tracked trips yet.</p>';
+  const groups = gPlaceGroups(all2).slice(0, 40);
+  $("g_pl").innerHTML = groups.length ? '<table><tr><th>Place</th><th>Times visited</th><th>Time spent</th><th>Consultants</th><th>Last visit</th><th></th></tr>' + groups.map((g, i) => `<tr><td style="white-space:normal;min-width:200px">${placeHtml(g.name, g.addr && g.addr !== g.name ? g.addr : "")}</td><td>${g.visits}</td><td>${mins(g.min)}</td><td style="white-space:normal">${esc(g.who.join(", "))}</td><td>${esc(g.last ? localStr(new Date(g.last).getTime()).slice(0, 16) : "")}</td><td><button class="ghost sm" data-gp="${i}">Show on map</button></td></tr>`).join("") + "</table>" : '<p class="sub" style="padding:12px">No places yet. They appear after trips are ended and saved.</p>';
+  window.__gGroups = groups;
+}
+function gPick(ll){
+  gpick = ll;
+  if (kmap) { if (gpickMk) gpickMk.setLatLng(ll); else gpickMk = L.marker(ll, {icon: pin("●", "#26215c")}).addTo(kmap); }
+  $("g_pcur").textContent = "Pin placed at " + ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5) + ". Open “Saved places” to save it.";
+}
+function gPlacesUi(){
+  const adm = ME && ME.role === "admin"; $("g_poff").disabled = !adm; if (!adm && $("g_pt").value === "office") $("g_pt").value = "school";
+  $("g_psb").style.display = $("g_pt").value === "school" ? "" : "none"; $("g_pob").style.display = $("g_pt").value === "office" ? "" : "none";
+  const cur = $("g_ps").value, names = [...new Set(programs.flatMap(p => p.schools.map(x => x.name)))].sort((a, b) => a.localeCompare(b));
+  $("g_ps").innerHTML = '<option value="">Select school…</option>' + names.map(n => `<option>${esc(n)}</option>`).join(""); $("g_ps").value = cur;
+}
+$("g_mode").onchange = gModeUi; $("g_sp").onclick = gShowPlaces; $("g_sr").onclick = gShowRoutes; $("g_d1").onchange = $("g_d2").onchange = gHistory;
+$("g_pl").onclick = e => { const b = e.target.closest("[data-gp]"); if (!b) return; const g = (window.__gGroups || [])[+b.dataset.gp]; if (!g) return; initK(); if (!kmap) return; klay.clearLayers(); kline.setLatLngs([]); L.marker([g.lat, g.lng], {icon: pin(String(g.visits), ccol(g.who[0]))}).bindPopup("<b>" + esc(g.name) + "</b>").addTo(klay).openPopup(); kmap.setView([g.lat, g.lng], 17); window.scrollTo(0, 0); };
+$("g_pt").onchange = gPlacesUi;
+$("g_psave").onclick = async () => {
+  if (!gpick) return gMsg("Click the map to drop a pin first.");
+  const t = $("g_pt").value; let key;
+  if (t === "school") { const n = $("g_ps").value; if (!n) return gMsg("Choose the school first."); key = "loc:school:" + n; }
+  else { if (!ME || ME.role !== "admin") return gMsg("Only an administrator can save an office."); key = "loc:office:" + $("g_po").value; }
+  gMsg("Saving…", true);
+  const value = {lat: +gpick.lat.toFixed(6), lng: +gpick.lng.toFixed(6), addr: ""}, j = await post({action: "setKV", k: key, value});
+  if (!j.ok) return gMsg(j.error || "Could not save the place.");
+  (DATA.__kv = DATA.__kv || {})[key] = value; for (const k in placeCache) delete placeCache[k]; gMsg("Place saved ✓ Stops near it will now use this name.", true);
+};
+$("g_start").onclick = gStart; $("g_end").onclick = gEnd; $("g_loc").onclick = gLocate;
+$("g_qb").onclick = gSearch; $("g_q").onkeydown = e => { if (e.key === "Enter") gSearch(); };
+$("g_r").onclick = e => { const b = e.target.closest("[data-gf]"); if (!b) return; const x = gfound[+b.dataset.gf]; gdest.push({n: x.display_name.split(",").slice(0, 2).join(",").trim(), lat: +(+x.lat).toFixed(6), lng: +(+x.lon).toFixed(6)}); $("g_r").innerHTML = ""; initK(); gDestHtml(); gPick(L.latLng(+x.lat, +x.lon)); if (kmap) kmap.setView([+x.lat, +x.lon], 15); };
+$("g_dests").onclick = e => { const b = e.target.closest("[data-gx]"); if (b) { gdest.splice(+b.dataset.gx, 1); gDestHtml(); } };
+$("g_log").onclick = e => { const b = e.target.closest("[data-gv]"); if (b) gView(b.dataset.gv); };
+$("g_fb").onchange = $("g_fu").onchange = gHistory;
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && gs) gWake(); });
+gDestHtml(); gUi();
+
+$("printBtn").onclick = () => window.print();
+$("rf").onclick = load;
+$("sel").onchange = detail;
+if (TOK) load(); else { showLogin(); splashDone(false); }
+setInterval(load, REFRESH_MS);

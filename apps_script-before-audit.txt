@@ -1,0 +1,546 @@
+const NOTIFY_EMAIL = "iso.eimcta.consult003@gmail.com";  // check this is your real address
+const SS_ID = "1pb4PiZKGdeffpTot-fKLlmq0cwbhQagIhHfi29MTbHs";  // Program Progress Report sheet
+const TEMPLATE_DOC_ID = "1qfTPqZ-7G6lKOj9iyUC1Pt7h0ML1MvCCODwEIDdSVHk";  // ISO_Program_Invitation (template)
+const INVITE_FOLDER_ID = "";   // optional: Drive folder ID where new invitations are kept
+const SHARE_LINK = true;       // true = anyone with the link can view each invitation
+const TARGET_TAB = "Target Dates";
+const SCH_TAB = "Schedules";
+const KV_TAB = "Travel Data";
+const USERS_TAB = "Users";
+const USER_HEAD = ["Email", "Name", "Role", "Salt", "Hash", "Status", "Created", "ResetHash", "ResetExpiry", "Username", "Branch"];
+const SESSION_DAYS = 7;
+const TRACK_TAB = "Trip Tracker";
+const TRACK_HEAD = ["ID", "Date", "Username", "Name", "Branch", "Start (UTC)", "End (UTC)", "Duration (min)", "Distance (km)", "Avg speed (km/h)", "Max speed (km/h)", "From (JSON)", "Destinations", "Stops (JSON)", "Route (polyline)", "Saved at", "Start time (local)", "End time (local)", "Start place", "End place", "Stops (names and times)", "End point (JSON)", "Mode", "Bus fare (Rs.)"];
+const BRANCHES = {
+  Kathmandu: ["Raju Ghale", "Pasang Sherpa", "Samaldip Rai", "Sulab Dhakal", "Sarthak Kharel", "Rabin Sunar"],
+  Itahari: ["Sova Dahal", "Abishek Ghimimri", "Ishika Niraula", "Sachin Sarma", "Achyut Karki"]
+};
+const ADMIN_EMAIL = NOTIFY_EMAIL;  // createAdmin() makes the first administrator with this email
+const DASH_URL = "https://isoeimctaconsult003-art.github.io/third-eye-by-eimcta/";
+const HEAD = ["ID", "School", "Program", "Discussion", "Opening date", "Closing date"];
+const SCH_HEAD = ["ID", "Date", "Shift", "Time", "School", "Consultant", "Programs", "Sub programs", "Services", "Resources", "Participation", "Created", "Status", "Invitation", "Date (BS)"];
+const SEP = " | ";
+const TITLES = {  // shown before the presenter name in the invitation; edit if needed
+  "Raju Ghale": "Mr.", "Pasang Sherpa": "Mr.", "Samaldip Rai": "Mr.", "Sulab Dhakal": "Mr.", "Sarthak Kharel": "Mr.", "Rabin Sunar": "Mr.",
+  "Sova Dahal": "Ms.", "Abishek Ghimimri": "Mr.", "Ishika Niraula": "Ms.", "Sachin Sarma": "Mr.", "Achyut Karki": "Mr."
+};
+
+function json_(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+function targetSheet_() {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sh = ss.getSheetByName(TARGET_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(TARGET_TAB);
+    sh.getRange("A:F").setNumberFormat("@");
+    sh.appendRow(HEAD);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function schSheet_() {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sh = ss.getSheetByName(SCH_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(SCH_TAB);
+    sh.getRange("A:O").setNumberFormat("@");
+    sh.appendRow(SCH_HEAD);
+    sh.setFrozenRows(1);
+  }
+  [[13, "Status"], [14, "Invitation"], [15, "Date (BS)"]].forEach(c => {
+    if (sh.getRange(1, c[0]).getValue() !== c[1]) {
+      sh.getRange(1, c[0], sh.getMaxRows(), 1).setNumberFormat("@");
+      sh.getRange(1, c[0]).setValue(c[1]);
+    }
+  });
+  return sh;
+}
+function readTargets_() {
+  return targetSheet_().getDataRange().getDisplayValues().slice(1).filter(r => r[0])
+    .map(r => ({id: r[0], school: r[1], program: r[2], discussion: r[3], open: r[4], close: r[5]}));
+}
+function readSchedules_() {
+  const sp = v => v ? String(v).split(SEP) : [];
+  return schSheet_().getDataRange().getDisplayValues().slice(1).filter(r => r[0]).map(r => ({
+    id: r[0], date: r[1], shift: r[2], time: r[3], school: r[4], consultant: r[5],
+    programs: sp(r[6]), subs: sp(r[7]), services: sp(r[8]), resources: r[9], participation: sp(r[10]),
+    status: r[12] === "Done" ? "Done" : "Booked", invite: r[13] || "", bs: r[14] || ""
+  }));
+}
+function findRow_(sh, id) {
+  const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues().flat();
+  const i = ids.indexOf(id);
+  return i < 1 ? 0 : i + 1;
+}
+function schConflict_(b, all) {
+  const day = all.filter(x => x.date === b.date), mine = day.filter(x => x.consultant === b.consultant);
+  if (mine.some(x => x.shift === b.shift)) return b.consultant + " already has a " + b.shift.toLowerCase() + " booking on this date.";
+  if (mine.length >= 2) return b.consultant + " already has 2 schedules on this date.";
+  const bp = b.programs || [];
+  const clash = day.find(x => x.school === b.school && x.shift === b.shift && x.consultant !== b.consultant && x.programs.some(p => bp.indexOf(p) >= 0));
+  if (clash) return "At " + b.school + " in the " + b.shift.toLowerCase() + ", " + clash.consultant + " already has " + clash.programs.filter(p => bp.indexOf(p) >= 0).join(", ") + ". Two consultants can share a school and shift only with different programs.";
+  return "";
+}
+function progTitle_(b) {
+  const subs = (b.subs || []).map(v => v.split(" › ").pop());
+  return (subs.length ? subs : (b.programs || [])).join(", ");
+}
+function fmtDate_(iso) {
+  return Utilities.formatDate(new Date(iso + "T00:00:00"), Session.getScriptTimeZone(), "d MMMM yyyy");
+}
+function esc_(s) {
+  return String(s).replace(/\\/g, "\\\\").replace(/\$/g, "\\$");
+}
+function setCell_(cell, text) {
+  const v = text || "-";
+  if (cell.getText().trim()) cell.replaceText(".+", esc_(v)); else cell.setText(v);
+}
+function makeInvitation_(b) {
+  let stage = "copy the template", file = null;
+  try {
+    file = DriveApp.getFileById(TEMPLATE_DOC_ID).makeCopy("Invitation - " + b.school + " - " + b.date);
+    stage = "move to folder";
+    if (INVITE_FOLDER_ID) file.moveTo(DriveApp.getFolderById(INVITE_FOLDER_ID));
+    stage = "open the copy";
+    const doc = DocumentApp.openById(file.getId()), body = doc.getBody();
+    stage = "school line";
+    const ps = body.getParagraphs();
+    for (let i = 0; i < ps.length; i++) {
+      if (/^Dear Valued/i.test(ps[i].getText().trim())) {
+        for (let j = i + 1; j < ps.length; j++) {
+          if (ps[j].getText().trim()) { ps[j].replaceText(".+", esc_(b.school)); break; }
+        }
+        break;
+      }
+    }
+    const val = {
+      "program title": progTitle_(b),
+      "expected participants": (b.participation || []).join(", "),
+      "venue": b.school,
+      "date": b.bs || fmtDate_(b.date),
+      "time": b.time,
+      "presenter": ((TITLES[b.consultant] || "") + " " + b.consultant).trim(),
+      "required resources": b.resources
+    };
+    const tables = body.getTables();
+    for (let ti = 0; ti < tables.length; ti++) {
+      const t = tables[ti];
+      for (let r = 0; r < t.getNumRows(); r++) {
+        const row = t.getRow(r);
+        if (row.getNumCells() < 2) continue;
+        const k = row.getCell(0).getText().trim().toLowerCase();
+        if (k in val) { stage = "table row '" + k + "'"; setCell_(row.getCell(1), val[k]); }
+      }
+    }
+    stage = "save";
+    doc.saveAndClose();
+    stage = "share";
+    if (SHARE_LINK) file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getUrl();
+  } catch (err) {
+    try { if (file) file.setTrashed(true); } catch (x) {}
+    throw new Error("Invitation step '" + stage + "' failed: " + err);
+  }
+}
+function kvSheet_() {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sh = ss.getSheetByName(KV_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(KV_TAB);
+    sh.getRange("A:B").setNumberFormat("@");
+    sh.appendRow(["Key", "Value (JSON)"]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function readKV_() {
+  const o = {};
+  kvSheet_().getDataRange().getValues().slice(1).forEach(r => {
+    if (r[0]) { try { o[r[0]] = JSON.parse(r[1]); } catch (e) {} }
+  });
+  return o;
+}
+function setKV_(key, val) {
+  const sh = kvSheet_();
+  const keys = sh.getRange(1, 1, sh.getLastRow(), 1).getValues().flat();
+  const i = keys.indexOf(key);
+  sh.getRange(i < 1 ? sh.getLastRow() + 1 : i + 1, 1, 1, 2).setNumberFormat("@").setValues([[key, JSON.stringify(val)]]);
+}
+// ===== Login, sessions and users =====
+function usersSheet_() {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sh = ss.getSheetByName(USERS_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(USERS_TAB);
+    sh.getRange("A:K").setNumberFormat("@");
+    sh.appendRow(USER_HEAD);
+    sh.setFrozenRows(1);
+  }
+  [[10, "Username"], [11, "Branch"]].forEach(c => {
+    if (sh.getRange(1, c[0]).getValue() !== c[1]) {
+      sh.getRange(1, c[0], sh.getMaxRows(), 1).setNumberFormat("@");
+      sh.getRange(1, c[0]).setValue(c[1]);
+    }
+  });
+  return sh;
+}
+function branchOfName_(n) {
+  const x = String(n || "").trim().toLowerCase();
+  for (const b in BRANCHES) if (BRANCHES[b].some(v => v.toLowerCase() === x)) return b;
+  return "";
+}
+function userBranch_(u) { return u.branch || branchOfName_(u.name); }
+function visible_(me, name) {
+  if (me.role === "admin") return true;
+  if (me.role === "branch_admin") { const b = userBranch_(me); return !!b && branchOfName_(name) === b; }
+  return String(name || "").trim().toLowerCase() === String(me.name || "").trim().toLowerCase();
+}
+function hex_(bytes) { return bytes.map(b => ("0" + (b & 0xff).toString(16)).slice(-2)).join(""); }
+function hashPw_(salt, pw) {
+  let h = salt + "|" + pw;
+  for (let i = 0; i < 1200; i++) h = hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, h + salt));
+  return h;
+}
+function secret_() {
+  const p = PropertiesService.getScriptProperties();
+  let s = p.getProperty("SECRET");
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty("SECRET", s); }
+  return s;
+}
+function sign_(payload) { return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(payload, secret_())); }
+function makeToken_(u) {
+  const payload = Utilities.base64EncodeWebSafe(JSON.stringify({e: u.email, x: Date.now() + SESSION_DAYS * 864e5}));
+  return payload + "." + sign_(payload);
+}
+function findUser_(email) {
+  const em = String(email || "").trim().toLowerCase();
+  if (!em) return null;
+  const rows = usersSheet_().getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (String(r[0]).trim().toLowerCase() === em || (r[9] && String(r[9]).trim().toLowerCase() === em)) {
+      return {row: i + 1, email: String(r[0]).trim(), name: String(r[1]), role: String(r[2]), salt: String(r[3]), hash: String(r[4]),
+        status: String(r[5]), resetHash: String(r[7] || ""), resetExp: Number(r[8] || 0), username: String(r[9] || ""), branch: String(r[10] || "")};
+    }
+  }
+  return null;
+}
+function verify_(tok) {
+  if (!tok) return null;
+  const parts = String(tok).split(".");
+  if (parts.length !== 2 || sign_(parts[0]) !== parts[1]) return null;
+  let p;
+  try { p = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString()); } catch (e) { return null; }
+  if (!p || !p.x || p.x < Date.now()) return null;
+  const u = findUser_(p.e);
+  if (!u || u.status !== "Active") return null;
+  return {email: u.email, name: u.name, role: u.role, username: u.username, branch: userBranch_(u)};
+}
+function addUser_(email, name, role, pw, username, branch) {
+  const sh = usersSheet_(), salt = Utilities.getUuid();
+  sh.getRange(sh.getLastRow() + 1, 1, 1, 11).setNumberFormat("@")
+    .setValues([[String(email).trim(), name, role, salt, hashPw_(salt, pw), "Active", new Date().toISOString(), "", "", username || "", branch || ""]]);
+}
+function setPw_(u, pw) {
+  const salt = Utilities.getUuid();
+  usersSheet_().getRange(u.row, 4, 1, 2).setValues([[salt, hashPw_(salt, pw)]]);
+}
+function tempPw_() {
+  const c = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const u = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
+  let s = "";
+  for (let i = 0; i < 10; i++) s += c[parseInt(u.substr(i * 2, 2), 16) % c.length];
+  return s;
+}
+function doLogin_(d) {
+  const email = String(d.email || "").trim().toLowerCase(), cache = CacheService.getScriptCache(), ck = "fail:" + email;
+  if (Number(cache.get(ck) || 0) >= 5) return {ok: false, error: "Too many attempts. Please try again in 10 minutes."};
+  const u = findUser_(email);
+  if (!u || u.status !== "Active" || hashPw_(u.salt, String(d.password || "")) !== u.hash) {
+    cache.put(ck, String(Number(cache.get(ck) || 0) + 1), 600);
+    return {ok: false, error: "Wrong email or password."};
+  }
+  cache.remove(ck);
+  return {ok: true, token: makeToken_(u), user: {email: u.email, name: u.name, role: u.role, username: u.username, branch: userBranch_(u)}};
+}
+function doForgot_(d) {
+  const email = String(d.email || "").trim().toLowerCase(), cache = CacheService.getScriptCache(), ck = "fg:" + email;
+  const msg = {ok: true, message: "If this email is registered, a 6-digit code has been sent to it. It works for 15 minutes."};
+  if (Number(cache.get(ck) || 0) >= 3) return msg;
+  cache.put(ck, String(Number(cache.get(ck) || 0) + 1), 600);
+  const u = findUser_(email);
+  if (u && u.status === "Active") {
+    const code = String(parseInt(Utilities.getUuid().replace(/-/g, "").slice(0, 8), 16) % 900000 + 100000);
+    usersSheet_().getRange(u.row, 8, 1, 2).setValues([[hashPw_(u.salt, code), Date.now() + 15 * 60000]]);
+    MailApp.sendEmail(u.email, "Third Eye password reset code", "Your password reset code is " + code + ".\nIt works for 15 minutes.\nIf you did not ask for this, ignore this email.\n\nThird Eye by EIMCTA");
+  }
+  return msg;
+}
+function doReset_(d) {
+  const email = String(d.email || "").trim().toLowerCase(), cache = CacheService.getScriptCache(), ck = "rs:" + email, pw = String(d.password || "");
+  if (Number(cache.get(ck) || 0) >= 5) return {ok: false, error: "Too many attempts. Please ask for a new code later."};
+  if (pw.length < 8) return {ok: false, error: "The new password must be at least 8 characters."};
+  const u = findUser_(email);
+  if (!u || u.status !== "Active" || !u.resetHash || Date.now() > u.resetExp || hashPw_(u.salt, String(d.code || "").trim()) !== u.resetHash) {
+    cache.put(ck, String(Number(cache.get(ck) || 0) + 1), 600);
+    return {ok: false, error: "The code is wrong or has expired."};
+  }
+  setPw_(u, pw);
+  usersSheet_().getRange(u.row, 8, 1, 2).setValues([["", ""]]);
+  cache.remove(ck);
+  return {ok: true};
+}
+function doChangePw_(me, d) {
+  const u = findUser_(me.email), pw = String(d.password || "");
+  if (!u || hashPw_(u.salt, String(d.old || "")) !== u.hash) return {ok: false, error: "The current password is wrong."};
+  if (pw.length < 8) return {ok: false, error: "The new password must be at least 8 characters."};
+  setPw_(u, pw);
+  return {ok: true};
+}
+function adminAction_(me, d) {
+  const isSuper = me.role === "admin", myBranch = userBranch_(me);
+  const rowUser = r => ({email: String(r[0]), name: String(r[1]), role: String(r[2]), status: String(r[5]), username: String(r[9] || ""), branch: String(r[10] || "") || branchOfName_(r[1])});
+  const manage = u => isSuper || (u.role === "consultant" && !!myBranch && userBranch_(u) === myBranch);
+  const email = String(d.email || "").trim();
+  if (d.action === "listUsers") {
+    const rows = usersSheet_().getDataRange().getValues().slice(1).filter(r => r[0]).map(rowUser).filter(manage);
+    return {ok: true, users: rows};
+  }
+  if (d.action === "addUser") {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return {ok: false, error: "Enter a valid email address."};
+    if (findUser_(email)) return {ok: false, error: "This email already has an account."};
+    const username = String(d.username || email.split("@")[0]).trim().toLowerCase();
+    if (!/^[a-z0-9._-]{3,30}$/.test(username)) return {ok: false, error: "The username must be 3 to 30 letters, numbers, dots, dashes or underscores."};
+    if (findUser_(username)) return {ok: false, error: "This username is already taken."};
+    let role = ["admin", "branch_admin", "consultant"].indexOf(d.role) >= 0 ? d.role : "consultant", branch = BRANCHES[d.branch] ? d.branch : "";
+    if (!isSuper) { role = "consultant"; branch = myBranch; }
+    if (role === "branch_admin" && !branch) return {ok: false, error: "Choose the branch for a branch administrator."};
+    const name = String(d.name || email).trim(), pw = tempPw_();
+    addUser_(email, name, role, pw, username, branch);
+    let mailed = true;
+    try { MailApp.sendEmail(email, "Your Third Eye login", "Hello " + name + ",\n\nYour account for Third Eye by EIMCTA is ready.\nWebsite: " + DASH_URL + "\nUsername: " + username + " (or your email)\nTemporary password: " + pw + "\n\nPlease sign in and change your password (use the Password button at the top).\n"); } catch (err) { mailed = false; }
+    return {ok: true, temp: pw, mailed: mailed, username: username};
+  }
+  const u = findUser_(email);
+  if (!u) return {ok: false, error: "User not found."};
+  if (!manage(u)) return {ok: false, error: "You can only manage consultants of your own branch."};
+  if (d.action === "setUserStatus") {
+    if (u.email.toLowerCase() === me.email.toLowerCase()) return {ok: false, error: "You cannot disable your own account."};
+    usersSheet_().getRange(u.row, 6).setValue(d.status === "Disabled" ? "Disabled" : "Active");
+    return {ok: true};
+  }
+  if (d.action === "resetUserPassword") {
+    const pw = tempPw_();
+    setPw_(u, pw);
+    let mailed = true;
+    try { MailApp.sendEmail(u.email, "Your Third Eye password was reset", "Your new temporary password is: " + pw + "\nWebsite: " + DASH_URL + "\n\nPlease sign in and change it (Password button at the top)."); } catch (err) { mailed = false; }
+    return {ok: true, temp: pw, mailed: mailed};
+  }
+  return {ok: false, error: "Unknown action."};
+}
+function createAdmin() {
+  if (findUser_(ADMIN_EMAIL)) { Logger.log("The administrator already exists: " + ADMIN_EMAIL + ". Use resetAdminPassword if you forgot the password."); return; }
+  const pw = tempPw_();
+  addUser_(ADMIN_EMAIL, "Administrator", "admin", pw, "admin", "");
+  MailApp.sendEmail(ADMIN_EMAIL, "Your Third Eye login", "Website: " + DASH_URL + "\nEmail: " + ADMIN_EMAIL + "\nTemporary password: " + pw + "\n\nSign in, then change your password with the Password button at the top.");
+  Logger.log("Administrator created. A temporary password was emailed to " + ADMIN_EMAIL);
+}
+function resetAdminPassword() {
+  const u = findUser_(ADMIN_EMAIL);
+  if (!u) { Logger.log("No administrator yet. Run createAdmin first."); return; }
+  const pw = tempPw_();
+  setPw_(u, pw);
+  MailApp.sendEmail(ADMIN_EMAIL, "Your Third Eye password was reset", "Your new temporary password is: " + pw + "\nWebsite: " + DASH_URL);
+  Logger.log("A new temporary password was emailed to " + ADMIN_EMAIL);
+}
+function tracksSheet_() {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sh = ss.getSheetByName(TRACK_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(TRACK_TAB);
+    sh.getRange("A:X").setNumberFormat("@");
+    sh.appendRow(TRACK_HEAD);
+    sh.setFrozenRows(1);
+  }
+  const have = sh.getRange(1, 1, 1, TRACK_HEAD.length).getValues()[0];
+  if (have.join("|") !== TRACK_HEAD.join("|")) {
+    sh.getRange(1, 1, sh.getMaxRows(), TRACK_HEAD.length).setNumberFormat("@");
+    sh.getRange(1, 1, 1, TRACK_HEAD.length).setValues([TRACK_HEAD]);
+  }
+  return sh;
+}
+function readTracks_() {
+  const js = (v, f) => { try { return JSON.parse(v); } catch (e) { return f; } };
+  return tracksSheet_().getDataRange().getValues().slice(1).filter(r => r[0]).map(r => ({
+    id: String(r[0]), date: String(r[1]), email: String(r[2]), name: String(r[3]), branch: String(r[4]), start: String(r[5]), end: String(r[6]),
+    durMin: Number(r[7]), km: Number(r[8]), avgKmh: Number(r[9]), maxKmh: Number(r[10]), from: js(r[11], {}), dests: js(r[12], []), stops: js(r[13], []), route: String(r[14]),
+    startLocal: String(r[16] || ""), endLocal: String(r[17] || ""), startPlace: String(r[18] || ""), endPlace: String(r[19] || ""), stopsText: String(r[20] || ""), endPt: js(r[21], {}),
+    mode: String(r[22] || ""), fare: r[23] === "" || r[23] === undefined ? null : Number(r[23])
+  }));
+}
+function schAllowed_(me, id) {
+  const s = readSchedules_().find(x => x.id === id);
+  return s ? visible_(me, s.consultant) : true;
+}
+function doGet(e) {
+  const me = verify_(e && e.parameter && e.parameter.tok);
+  if (!me) return json_({__auth: false, __version: "travel-v3"});
+
+  const ss = SpreadsheetApp.openById(SS_ID);
+  const out = {};
+  ss.getSheets().forEach(sh => {
+    const n = sh.getName();
+    if (n === TARGET_TAB || n === SCH_TAB || n === KV_TAB || n === USERS_TAB || n === TRACK_TAB) return;
+    const v = sh.getDataRange().getDisplayValues();
+    const h = v.findIndex(r => String(r[0]).trim() === 'S.N');
+    if (h < 0) return;
+    out[n.trim()] = { headers: v[h], rows: v.slice(h + 1).filter(r => String(r[1]).trim()) };
+  });
+  out.__version = "travel-v3";
+  out.__user = me;
+  out.__targets = readTargets_();
+  out.__schedules = readSchedules_().filter(s => visible_(me, s.consultant));
+  const kv = readKV_();
+  Object.keys(kv).forEach(k => {
+    if (k.indexOf("trip:") === 0 && !(kv[k] && visible_(me, kv[k].c))) delete kv[k];
+    else if (k.indexOf("loc:home:") === 0 && !visible_(me, k.slice(9))) delete kv[k];
+  });
+  out.__kv = kv;
+  out.__tracks = readTracks_().filter(t => visible_(me, t.name));
+  return json_(out);
+}
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  let locked = false;
+  try {
+    const d = JSON.parse(e.postData.contents);
+    if (d.action === "login") return json_(doLogin_(d));
+    if (d.action === "forgot") return json_(doForgot_(d));
+    const me = verify_(d.tok);
+    if (d.action !== "reset" && !me) return json_({ok: false, error: "auth"});
+    locked = lock.tryLock(28000);
+    if (!locked) return json_({ok: false, error: "The server is busy. Please click Save again in a few seconds."});
+    if (d.action === "reset") return json_(doReset_(d));
+    if (d.action === "changePassword") return json_(doChangePw_(me, d));
+    if (["listUsers", "addUser", "setUserStatus", "resetUserPassword"].indexOf(d.action) >= 0) {
+      if (me.role !== "admin" && me.role !== "branch_admin") return json_({ok: false, error: "Only an administrator can do this."});
+      return json_(adminAction_(me, d));
+    }
+    if (d.action === "setKV") {
+      const k = String(d.k || "");
+      if (!k) return json_({ok: false, error: "Missing key."});
+      if ((k === "settings" || k.indexOf("loc:home:") === 0 || k.indexOf("loc:office:") === 0) && me.role !== "admin") return json_({ok: false, error: "Only an administrator can change this."});
+      if (k.indexOf("trip:") === 0) {
+        if (d.value === null) { if (me.role !== "admin") return json_({ok: false, error: "Only an administrator can delete a trip."}); }
+        else {
+          if (!visible_(me, d.value.c)) return json_({ok: false, error: "You can only save your own trips."});
+          if ((d.value.status === "Approved" || d.value.status === "Paid") && me.role === "consultant") return json_({ok: false, error: "Only an administrator or branch administrator can approve trips."});
+        }
+      }
+      setKV_(k, d.value);
+      return json_({ok: true});
+    }
+    if (["deleteSchedule", "setScheduleStatus", "makeInvitation"].indexOf(d.action) >= 0 && !schAllowed_(me, d.id)) return json_({ok: false, error: "You can only change your own schedules."});
+    if (d.action === "saveSchedule" && !(d.row && visible_(me, d.row.consultant))) return json_({ok: false, error: "You can only book schedules for yourself."});
+    if (d.action === "saveTrack") {
+      const r = d.row || {};
+      if (!r.id) return json_({ok: false, error: "Missing trip id."});
+      const sh = tracksSheet_();
+      if (findRow_(sh, String(r.id))) return json_({ok: true, id: r.id, dup: true});
+      const mode = ["bike", "car", "bus"].indexOf(r.mode) >= 0 ? r.mode : "", fare = mode === "bus" && r.fare !== null && r.fare !== undefined && !isNaN(Number(r.fare)) ? Number(r.fare) : "";
+      sh.getRange(sh.getLastRow() + 1, 1, 1, 24).setNumberFormat("@").setValues([[String(r.id), r.date, me.email, me.name, userBranch_(me), r.start, r.end, r.durMin, r.km, r.avgKmh, r.maxKmh,
+        JSON.stringify(r.from || {}), JSON.stringify(r.dests || []), JSON.stringify(r.stops || []), String(r.route || "").slice(0, 45000), new Date().toISOString(),
+        r.startLocal || "", r.endLocal || "", r.startPlace || "", r.endPlace || "", String(r.stopsText || "").slice(0, 45000), JSON.stringify(r.endPt || {}), mode, fare]]);
+      return json_({ok: true, id: r.id});
+    }
+    if (d.action === "deleteTrack") {
+      if (me.role !== "admin") return json_({ok: false, error: "Only an administrator can delete a tracked trip."});
+      const sh = tracksSheet_(), r = findRow_(sh, String(d.id));
+      if (r) sh.deleteRow(r);
+      return json_({ok: true});
+    }
+    if (d.action === "deleteSchedule") {
+      const sh = schSheet_(), r = findRow_(sh, d.id);
+      if (r) sh.deleteRow(r);
+      return json_({ok: true});
+    }
+    if (d.action === "setScheduleStatus") {
+      if (me.role !== "admin" && me.role !== "branch_admin") return json_({ok: false, error: "Only an administrator can mark a schedule as done."});
+      const sh = schSheet_(), r = findRow_(sh, d.id);
+      if (!r) return json_({ok: false, error: "Schedule not found."});
+      sh.getRange(r, 13).setNumberFormat("@").setValue(d.status === "Done" ? "Done" : "Booked");
+      return json_({ok: true});
+    }
+    if (d.action === "makeInvitation") {
+      const sh = schSheet_(), r = findRow_(sh, d.id), b = readSchedules_().find(x => x.id === d.id);
+      if (!r || !b) return json_({ok: false, error: "Schedule not found."});
+      let url = "";
+      try {
+        url = makeInvitation_(b);
+      } catch (err) {
+        return json_({ok: false, error: "Could not create the invitation. Run authorizeAll in Apps Script once, then redeploy. (" + err + ")"});
+      }
+      sh.getRange(r, 14).setNumberFormat("@").setValue(url);
+      return json_({ok: true, invite: url});
+    }
+    if (d.action === "saveSchedule") {
+      const b = d.row, msg = schConflict_(b, readSchedules_());
+      if (msg) return json_({ok: false, error: msg});
+      const sh = schSheet_(), id = Utilities.getUuid(), row = sh.getLastRow() + 1;
+      b.id = id;
+      sh.getRange(row, 1, 1, 15).setNumberFormat("@").setValues([[id, b.date, b.shift, b.time, b.school, b.consultant,
+        (b.programs || []).join(SEP), (b.subs || []).join(SEP), (b.services || []).join(SEP), b.resources || "",
+        (b.participation || []).join(SEP), new Date().toISOString(), "Booked", "", b.bs || ""]]);
+      let url = "", inviteError = "";
+      try {
+        url = makeInvitation_(b);
+        sh.getRange(row, 14).setValue(url);
+      } catch (err) {
+        inviteError = "Run authorizeAll in Apps Script once, then redeploy. (" + err + ")";
+      }
+      return json_({ok: true, id: id, invite: url, invite_error: inviteError});
+    }
+    const sh = targetSheet_();
+    if (d.action === "delete") {
+      const r = findRow_(sh, d.id);
+      if (r) sh.deleteRow(r);
+      return json_({ok: true});
+    }
+    const t = d.row, id = t.id || Utilities.getUuid();
+    const r = t.id ? findRow_(sh, t.id) : 0;
+    sh.getRange(r || sh.getLastRow() + 1, 1, 1, 6).setNumberFormat("@")
+      .setValues([[id, t.school, t.program, t.discussion, t.open, t.close]]);
+    return json_({ok: true, id: id});
+  } catch (err) {
+    return json_({ok: false, error: "Could not save: " + err});
+  } finally {
+    if (locked) lock.releaseLock();
+  }
+}
+function authorizeAll() {
+  DocumentApp.openById(TEMPLATE_DOC_ID).getName();
+  DriveApp.getRootFolder();
+  SpreadsheetApp.openById(SS_ID).getName();
+  MailApp.getRemainingDailyQuota();
+}
+function checkClosingDates() {
+  const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  const due = readTargets_().filter(t => t.close === today);
+  if (!due.length) return;
+  const lines = due.map(t => "• " + t.school + ": " + t.program + (t.discussion ? " (" + t.discussion + ")" : ""));
+  MailApp.sendEmail(NOTIFY_EMAIL,
+    "This school has a closing date today: " + due.map(t => t.school).join(", "),
+    "Closing date TODAY (" + today + "):\n\n" + lines.join("\n") + "\n\nThird Eye by EIMCTA");
+}
+function setupDailyReminder() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "checkClosingDates")
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("checkClosingDates").timeBased().everyDays(1).atHour(8).create();
+}
+function testInvitation() {
+  const b = {school: "Test School", date: "2026-10-20", shift: "First shift", time: "Starts at 01:30 PM", consultant: "Pasang Sherpa",
+    programs: ["ISO 21001 EOMS"], subs: ["ISO 21001 EOMS › Orientation"], resources: "Smart board, internet",
+    participation: ["Principal", "DEO"], bs: "Ashoj 23, 2083"};
+  Logger.log("Invitation created: " + makeInvitation_(b));
+}
