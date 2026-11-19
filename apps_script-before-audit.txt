@@ -1,6 +1,6 @@
 const NOTIFY_EMAIL = "iso.eimcta.consult003@gmail.com";  // check this is your real address
 const SS_ID = "1pb4PiZKGdeffpTot-fKLlmq0cwbhQagIhHfi29MTbHs";  // Program Progress Report sheet
-const TEMPLATE_DOC_ID = "1qfTPqZ-7G6lKOj9iyUC1Pt7h0ML1MvCCODwEIDdSVHk";  // ISO_Program_Invitation (template)
+const TEMPLATE_DOC_ID = "16ToLBt-eFYUFDEHTLRwYa0znIiUWAwmvMXg1rGxqv50";  // ISO_Program_Invitation (template)
 const INVITE_FOLDER_ID = "";   // optional: Drive folder ID where new invitations are kept
 const SHARE_LINK = true;       // true = anyone with the link can view each invitation
 const TARGET_TAB = "Target Dates";
