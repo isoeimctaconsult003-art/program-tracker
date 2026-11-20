@@ -576,7 +576,23 @@ function schoolView0(){
       if (ME && ME.role === "admin") {
         action = `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Update</button>${proof && proof.id ? `<button class="ghost" data-proof="${esc(proof.id)}">View / download proof</button>` : ""}</div>`;
       } else if (ME && ME.role === "cro") {
-        action = proof ? `<div class="proofbox"><span class="prooflocked">Submitted · locked for CRO</span><small>${esc(proof.submittedAt || "")}</small></div>` : `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option value="Done">Done</option><option value="Partially Done">Partially Done</option></select><input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}"><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Submit with job-card</button></div>`;
+        action = proof
+          ? `<div class="proofbox"><span class="prooflocked">✓ Submitted · locked for CRO</span><small>${esc(proof.submittedAt || "")}</small></div>`
+          : `<div class="proofbox" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+              <button type="button" class="ghost cro-progress-open" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="margin:0;display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true">📷</span> Update progress</button>
+              <div class="cro-progress-panel" hidden style="min-width:220px;padding:12px;border:1px solid var(--bd,#ddd);border-radius:10px;background:var(--card,#fff)">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Select status</label>
+                <select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="width:100%;margin-bottom:8px">
+                  <option value="">Choose status…</option><option value="Done">Done</option><option value="Partially Done">Partially Done</option><option value="Not Done">Not Done</option>
+                </select>
+                <div class="cro-proof-upload" hidden>
+                  <label style="display:block;font-size:12px;font-weight:600;margin:4px 0 6px">Job-card photo <span style="color:#c8423f">*</span></label>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}" style="max-width:100%">
+                  <small style="display:block;color:var(--mu);margin:5px 0 8px">JPG, PNG or WEBP · required</small>
+                  <button type="button" data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="margin:0">Submit proof</button>
+                </div>
+              </div>
+            </div>`;
       }
       h += `<tr><td style="padding-left:30px">${esc(t)}</td><td><span class="chip ${x === 1 ? "ok" : x ? "pa" : ""}">${esc(v || "–")}</span>${action}</td><td></td></tr>`;
     });
@@ -629,21 +645,40 @@ $("sres").onclick = async e => {
   const pick = e.target.closest("[data-s]"); if (pick) { $("ss").value = pick.dataset.s; schoolView(); return; }
   const proofBtn = e.target.closest("[data-proof]");
   if (proofBtn) { await downloadCompletionProof(proofBtn.dataset.proof); return; }
+  const openBtn = e.target.closest(".cro-progress-open");
+  if (openBtn) {
+    const panel = openBtn.parentElement.querySelector(".cro-progress-panel");
+    if (panel) panel.hidden = !panel.hidden;
+    return;
+  }
   const saveBtn = e.target.closest("[data-step-save]");
   if (saveBtn) {
-    const d = saveBtn.dataset, statusEl = [...$("sres").querySelectorAll(".step-status")].find(x => x.dataset.program === d.program && x.dataset.step === d.step);
-    const payload = {action:"updateProgramStep", program:d.program, school:d.school, step:d.step, status:statusEl ? statusEl.value : "Done"};
+    const d = saveBtn.dataset;
+    const row = saveBtn.closest("tr");
+    const statusEl = row && row.querySelector(".step-status");
+    const status = statusEl ? statusEl.value : "";
+    if (status === "Not Done" || !status) { return; } // CRO selecting Not Done intentionally makes no change.
+    const payload = {action:"updateProgramStep", program:d.program, school:d.school, step:d.step, status};
     if (ME && ME.role === "cro") {
-      const photo = [...$("sres").querySelectorAll("[data-jobphoto]")].find(x => x.dataset.jobphoto === d.program + "|" + d.step);
+      const photo = row && row.querySelector("[data-jobphoto]");
       if (!photo || !photo.files || !photo.files[0]) { alert("Please attach the job-card photo before submitting."); return; }
       try { payload.photo = await fileToDataUrl(photo.files[0]); payload.fileName = photo.files[0].name; }
       catch (err) { alert("Could not read the selected photo."); return; }
     }
-    saveBtn.disabled = true; saveBtn.textContent = "Saving…";
+    saveBtn.disabled = true; saveBtn.textContent = "Submitting…";
     const result = await post(payload);
-    if (!result.ok) { alert(result.error || "Could not update progress."); saveBtn.disabled = false; saveBtn.textContent = "Submit with job-card"; return; }
+    if (!result.ok) { alert(result.error || "Could not update progress."); saveBtn.disabled = false; saveBtn.textContent = "Submit proof"; return; }
     await load(); schoolView();
   }
+};
+$("sres").onchange = e => {
+  const status = e.target.closest(".step-status");
+  if (!status || !ME || ME.role !== "cro") return;
+  const panel = status.closest(".cro-progress-panel");
+  const upload = panel && panel.querySelector(".cro-proof-upload");
+  if (!upload) return;
+  // "Not Done" is deliberately a no-op: no proof request and no sheet update.
+  upload.hidden = status.value !== "Done" && status.value !== "Partially Done";
 };
 const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
 function show(id){
