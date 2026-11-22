@@ -272,8 +272,18 @@ body.locked .app{display:none}
 .ttlrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .who{background:rgba(154,121,223,.14);color:#6a4fc0;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500}.who:empty{display:none}
 
-.proofbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#f8f7fc;border-radius:10px;margin:6px 0}.proofbox input[type=file]{min-width:180px;width:auto;padding:5px}.proofbox button{margin:0}.prooflocked{color:#26734d;font-weight:600}.momfiles{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.momfiles input{min-width:150px;width:100%;padding:6px}
-@media(max-width:700px){.proofbox{align-items:stretch}.proofbox input[type=file]{width:100%}}
+.proofbox{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 0;background:transparent;border-radius:0;margin:4px 0}.proofbox input[type=file]{min-width:150px;width:auto;padding:4px;font-size:11px}.proofbox button{margin:0}.prooflocked{color:#26734d;font-weight:600;font-size:11px}.momfiles{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.momfiles input{min-width:150px;width:100%;padding:6px}
+.cro-progress-wrap{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 0}
+.cro-progress-open{padding:5px 9px!important;font-size:11px!important;line-height:1.2;border-radius:7px!important;min-height:26px}
+.cro-progress-panel{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:6px 8px;border:1px solid var(--bd,#ddd);border-radius:8px;background:var(--card,#fff);box-shadow:0 2px 8px rgba(30,25,70,.06)}
+.cro-progress-panel>label{font-size:11px;font-weight:600;color:var(--mu);margin:0}
+.cro-progress-panel .step-status{width:auto;min-width:132px;max-width:160px;margin:0;padding:5px 7px;font-size:11px}
+.cro-proof-upload{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cro-proof-upload label{font-size:11px;font-weight:600;margin:0!important}
+.cro-proof-upload input[type=file]{max-width:190px;font-size:11px;padding:3px}
+.cro-proof-upload small{font-size:10px;color:var(--mu);margin:0!important}
+.cro-proof-upload button{padding:5px 9px!important;font-size:11px!important;min-height:26px}
+@media(max-width:700px){.proofbox{align-items:center}.proofbox input[type=file]{width:auto}.cro-progress-panel{max-width:100%}.cro-proof-upload{width:100%}.cro-proof-upload input[type=file]{max-width:100%}}
 </style>
 <meta name="theme-color" content="#26215c">
 
@@ -578,18 +588,18 @@ function schoolView0(){
       } else if (ME && ME.role === "cro") {
         action = proof
           ? `<div class="proofbox"><span class="prooflocked">✓ Submitted · locked for CRO</span><small>${esc(proof.submittedAt || "")}</small></div>`
-          : `<div class="proofbox" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
-              <button type="button" class="ghost cro-progress-open" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="margin:0;display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true">📷</span> Update progress</button>
-              <div class="cro-progress-panel" hidden style="min-width:220px;padding:12px;border:1px solid var(--bd,#ddd);border-radius:10px;background:var(--card,#fff)">
-                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Select status</label>
-                <select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="width:100%;margin-bottom:8px">
-                  <option value="">Choose status…</option><option value="Done">Done</option><option value="Partially Done">Partially Done</option><option value="Not Done">Not Done</option>
+          : `<div class="cro-progress-wrap">
+              <button type="button" class="ghost cro-progress-open" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" title="Update progress" aria-label="Update progress">📷</button>
+              <div class="cro-progress-panel" hidden>
+                <label>Status</label>
+                <select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">
+                  <option value="">Select…</option><option value="Done">Done</option><option value="Partially Done">Partially Done</option><option value="Not Done">Not Done</option>
                 </select>
                 <div class="cro-proof-upload" hidden>
-                  <label style="display:block;font-size:12px;font-weight:600;margin:4px 0 6px">Job-card photo <span style="color:#c8423f">*</span></label>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}" style="max-width:100%">
-                  <small style="display:block;color:var(--mu);margin:5px 0 8px">JPG, PNG or WEBP · required</small>
-                  <button type="button" data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" style="margin:0">Submit proof</button>
+                  <label>Job-card photo <span style="color:#c8423f">*</span></label>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}">
+                  <small>Required</small>
+                  <button type="button" data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Submit</button>
                 </div>
               </div>
             </div>`;
