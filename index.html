@@ -84,6 +84,13 @@ footer{text-align:center;color:var(--mu);font-size:12px;padding:8px 0 28px}
 nav a.on{background:rgba(255,255,255,.14);border-left-color:var(--pa);color:#fff}
 @media(max-width:900px){nav{display:flex!important;flex-direction:row;overflow-x:auto;width:100%;margin:6px 0 0;gap:6px}nav a{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}nav a.on{border-bottom-color:var(--pa)}}
 .sd td:first-child{white-space:normal;min-width:260px}
+
+.school-lookup-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.school-lookup-tools #ssel{width:min(420px,48%);min-width:220px}
+.school-lookup-tools #spsearch{width:min(300px,38%);min-width:180px;margin-left:auto}
+@media(max-width:900px){.school-lookup-tools{gap:8px}.school-lookup-tools #ssel{width:48%;min-width:0}.school-lookup-tools #spsearch{width:48%;min-width:0}}
+@media(max-width:520px){.school-lookup-tools{flex-wrap:wrap}.school-lookup-tools #ssel,.school-lookup-tools #spsearch{width:100%}}
+
 .sd tr.gr td{background:#eef2f9!important;font-weight:600;color:var(--mar);border-top:2px solid var(--bd)}
 .mu2{display:none}
 @media(max-width:900px){
@@ -368,7 +375,12 @@ body.locked .app{display:none}
     <p style="margin-top:0"><select id="sel" aria-label="Choose a program"></select></p>
     <div class="scroll"><table id="det"></table></div></section>
 <section id="sl"><h2>School lookup</h2>
-    <p style="margin-top:0;display:flex;gap:10px;flex-wrap:wrap"><select id="ssel" aria-label="Choose a school"></select><input id="ss" list="slist" autocomplete="off" style="display:none"><datalist id="slist"></datalist></p>
+    <div class="school-lookup-tools">
+      <select id="ssel" aria-label="Choose a school"></select>
+      <input id="ss" list="slist" autocomplete="off" style="display:none"><datalist id="slist"></datalist>
+      <input id="spsearch" list="sproglist" autocomplete="off" placeholder="Search program…" aria-label="Search programs" />
+      <datalist id="sproglist"></datalist>
+    </div>
     <div class="tabs"><button class="tb on" data-t="p">Progress</button><button class="tb" data-t="t">Target dates</button></div>
     <div id="sres"></div><div id="tres" style="display:none"></div></section>
 <section id="cal"><h2>Consultant calendar</h2>
@@ -564,6 +576,8 @@ function schoolView0(){
   const q = $("ss").value.trim().toLowerCase(), out = $("sres"), m = new Map();
   programs.forEach(p => p.schools.forEach(s => { const k = s.name.toLowerCase(); if (!m.has(k)) m.set(k, s.name); }));
   const names = [...m.values()].sort((a, b) => a.localeCompare(b));
+  const programNames = [...new Set(programs.map(p => p.name).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  $("sproglist").innerHTML = programNames.map(n => `<option value="${esc(n)}">`).join("");
   $("slist").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
   $("ssel").innerHTML = '<option value="">Select a school…</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
   $("ssel").value = names.find(n => n.toLowerCase() === q) || "";
@@ -575,7 +589,9 @@ function schoolView0(){
     else { out.innerHTML = mt.length ? '<p class="sub">Did you mean:</p>' + mt.slice(0, 10).map(n => `<button class="ghost" data-s="${esc(n)}">${esc(n)}</button>`).join("") : '<p class="sub">No school found with that name.</p>'; return; }
   }
   curSchool = hit;
-  const rows = programs.map(p => ({p, s: p.schools.find(x => x.name.toLowerCase() === hit.toLowerCase())})).filter(r => r.s);
+  const programQuery = $("spsearch").value.trim().toLowerCase();
+  const rows = programs.map(p => ({p, s: p.schools.find(x => x.name.toLowerCase() === hit.toLowerCase())}))
+    .filter(r => r.s && (!programQuery || r.p.name.toLowerCase().includes(programQuery)));
   const done = rows.filter(r => r.s.sc === 1).length, prog = rows.filter(r => r.s.sc > 0 && r.s.sc < 1).length;
   const avg = rows.length ? rows.reduce((a, r) => a + r.s.sc, 0) / rows.length : 0;
   let h = `<h3 style="margin:0 0 10px;color:var(--mar)">${esc(hit)}</h3><div class="sk">
@@ -583,6 +599,10 @@ function schoolView0(){
     <div><span>In progress</span><b>${prog}</b></div>
     <div><span>Not started</span><b>${rows.length - done - prog}</b></div>
     <div><span>Average progress</span><b>${pct(avg)}</b></div></div>`;
+  if (!rows.length) {
+    out.innerHTML = `<h3 style="margin:0 0 10px;color:var(--mar)">${esc(hit)}</h3><p class="sub">No programs match “${esc($("spsearch").value.trim())}”. Clear the program search to see all programs.</p>`;
+    return;
+  }
   h += '<div class="scroll"><table class="sd"><tr><th>Program / step</th><th>Status</th><th>Progress</th></tr>';
   rows.forEach(r => {
     const k = r.s.sc === 1 ? ["Completed", "ok"] : r.s.sc > 0 ? ["In progress", "pa"] : ["Not started", ""];
@@ -659,6 +679,8 @@ async function load(){
 $("today").textContent = new Date().toLocaleDateString(undefined, {weekday: "long", year: "numeric", month: "long", day: "numeric"});
 $("ssel").onchange = () => { $("ss").value = $("ssel").value; schoolView(); };
 $("ss").oninput = schoolView; $("ss").onchange = schoolView;
+$("spsearch").oninput = () => { if (curSchool) schoolView0(); };
+$("spsearch").onchange = () => { if (curSchool) schoolView0(); };
 $("sres").onclick = async e => {
   const pick = e.target.closest("[data-s]"); if (pick) { $("ss").value = pick.dataset.s; schoolView(); return; }
   const proofBtn = e.target.closest("[data-proof]");
