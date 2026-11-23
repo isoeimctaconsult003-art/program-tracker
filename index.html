@@ -614,23 +614,22 @@ function schoolView0(){
       if (ME && ME.role === "admin") {
         action = `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Update</button>${proof && proof.id ? `<button class="ghost" data-proof="${esc(proof.id)}">View / download proof</button>` : ""}</div>`;
       } else if (ME && ME.role === "cro") {
-        action = proof
-          ? `<div class="proofbox"><span class="prooflocked">✓ Submitted · locked for CRO</span><small>${esc(proof.submittedAt || "")}</small></div>`
-          : `<div class="cro-progress-wrap">
-              <button type="button" class="ghost cro-progress-open" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" title="Update progress" aria-label="Update progress">📷</button>
-              <div class="cro-progress-panel" hidden>
-                <label>Status</label>
-                <select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">
-                  <option value="">Select…</option><option value="Done">Done</option><option value="Partially Done">Partially Done</option><option value="Not Done">Not Done</option>
-                </select>
-                <div class="cro-proof-upload" hidden>
-                  <label>Job-card photo <span style="color:#c8423f">*</span></label>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}">
-                  <small>Required</small>
-                  <button type="button" data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Submit</button>
-                </div>
+        action = `<div class="cro-progress-wrap">
+            ${proof ? `<span class="prooflocked">✓ ${esc(proof.status)} · status locked</span>` : ""}
+            <button type="button" class="ghost cro-progress-open" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" title="${proof ? "Update job-card photo" : "Update progress"}" aria-label="${proof ? "Update job-card photo" : "Update progress"}">📷</button>
+            <div class="cro-progress-panel" hidden>
+              ${proof ? `<small>Status: ${esc(proof.status)} · You can only replace the photo.</small>` : `<label>Status</label>
+              <select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">
+                <option value="">Select…</option><option value="Done">Done</option><option value="Partially Done">Partially Done</option><option value="Not Done">Not Done</option>
+              </select>`}
+              <div class="cro-proof-upload" ${proof ? "" : "hidden"}>
+                <label>${proof ? "Replace job-card photo" : "Job-card photo"} <span style="color:#c8423f">*</span></label>
+                <input type="file" accept="image/jpeg,image/png,image/webp" data-jobphoto="${esc(r.p.name)}|${esc(t)}">
+                <small>Required</small>
+                <button type="button" data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}" ${proof ? `data-status="${esc(proof.status)}"` : ""}>${proof ? "Update photo" : "Submit"}</button>
               </div>
-            </div>`;
+            </div>
+          </div>`;
       }
       h += `<tr><td style="padding-left:30px">${esc(t)}</td><td><span class="chip ${x === 1 ? "ok" : x ? "pa" : ""}">${esc(v || "–")}</span>${action}</td><td></td></tr>`;
     });
@@ -696,7 +695,7 @@ $("sres").onclick = async e => {
     const d = saveBtn.dataset;
     const row = saveBtn.closest("tr");
     const statusEl = row && row.querySelector(".step-status");
-    const status = statusEl ? statusEl.value : "";
+    const status = statusEl ? statusEl.value : (saveBtn.dataset.status || "");
     if (status === "Not Done" || !status) { return; } // CRO selecting Not Done intentionally makes no change.
     const payload = {action:"updateProgramStep", program:d.program, school:d.school, step:d.step, status};
     if (ME && ME.role === "cro") {
@@ -705,9 +704,10 @@ $("sres").onclick = async e => {
       try { payload.photo = await fileToDataUrl(photo.files[0]); payload.fileName = photo.files[0].name; }
       catch (err) { alert("Could not read the selected photo."); return; }
     }
-    saveBtn.disabled = true; saveBtn.textContent = "Submitting…";
+    const originalButtonText = saveBtn.textContent;
+    saveBtn.disabled = true; saveBtn.textContent = "Saving…";
     const result = await post(payload);
-    if (!result.ok) { alert(result.error || "Could not update progress."); saveBtn.disabled = false; saveBtn.textContent = "Submit proof"; return; }
+    if (!result.ok) { alert(result.error || "Could not update progress."); saveBtn.disabled = false; saveBtn.textContent = originalButtonText; return; }
     await load(); schoolView();
   }
 };
