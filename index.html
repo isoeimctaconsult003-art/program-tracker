@@ -612,7 +612,7 @@ function schoolView0(){
       const proof = (DATA.__proofs || []).find(p => p.school.toLowerCase() === hit.toLowerCase() && p.program === r.p.name && p.step === t);
       let action = "";
       if (ME && ME.role === "admin") {
-        action = `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Update</button>${proof && proof.id ? `<button class="ghost" data-proof="${esc(proof.id)}">View / download proof</button>` : ""}</div>`;
+        action = `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Update status</button>${proof && proof.id ? `<button class="ghost" data-proof="${esc(proof.id)}">View / download photo</button><input type="file" accept="image/jpeg,image/png,image/webp" data-admin-proof-photo style="max-width:150px;font-size:11px" aria-label="Choose replacement job-card photo"><button type="button" class="ghost" data-proof-replace="${esc(proof.id)}" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Replace photo</button><button type="button" class="ghost" data-proof-delete="${esc(proof.id)}">Delete photo</button>` : ""}</div>`;
       } else if (ME && ME.role === "cro") {
         action = `<div class="cro-progress-wrap">
             ${proof ? `<span class="prooflocked">✓ ${esc(proof.status)} · status locked</span>` : ""}
@@ -684,6 +684,36 @@ $("sres").onclick = async e => {
   const pick = e.target.closest("[data-s]"); if (pick) { $("ss").value = pick.dataset.s; schoolView(); return; }
   const proofBtn = e.target.closest("[data-proof]");
   if (proofBtn) { await downloadCompletionProof(proofBtn.dataset.proof); return; }
+  const replaceProofBtn = e.target.closest("[data-proof-replace]");
+  if (replaceProofBtn) {
+    const row = replaceProofBtn.closest("tr");
+    const fileInput = row && row.querySelector("[data-admin-proof-photo]");
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    if (!file) { alert("Choose a replacement job-card photo first."); return; }
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { alert("Use a JPG, PNG, or WEBP image."); return; }
+    if (file.size > 4 * 1024 * 1024) { alert("The photo must be under 4 MB."); return; }
+    replaceProofBtn.disabled = true;
+    try {
+      const photo = await fileToDataUrl(file);
+      const result = await post({action:"replaceCompletionProofPhoto", id:replaceProofBtn.dataset.proof, photo, fileName:file.name});
+      if (!result.ok) { alert(result.error || "Could not replace proof photo."); replaceProofBtn.disabled = false; return; }
+      alert("Job-card photo replaced successfully.");
+      await load(); schoolView();
+    } catch (err) {
+      alert("Could not read or upload the selected photo.");
+      replaceProofBtn.disabled = false;
+    }
+    return;
+  }
+  const deleteProofBtn = e.target.closest("[data-proof-delete]");
+  if (deleteProofBtn) {
+    if (!confirm("Delete this job-card photo? The recorded progress status will remain unchanged.")) return;
+    deleteProofBtn.disabled = true;
+    const result = await post({action:"deleteCompletionProof", id:deleteProofBtn.dataset.proof});
+    if (!result.ok) { alert(result.error || "Could not delete proof photo."); deleteProofBtn.disabled = false; return; }
+    await load(); schoolView();
+    return;
+  }
   const openBtn = e.target.closest(".cro-progress-open");
   if (openBtn) {
     const panel = openBtn.parentElement.querySelector(".cro-progress-panel");
