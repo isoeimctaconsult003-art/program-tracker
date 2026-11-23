@@ -211,6 +211,13 @@ dialog{border-radius:26px}
 .ovrow1{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;margin-bottom:18px}
 .ovrow2{display:grid;grid-template-columns:1.1fr 1.1fr .9fr;gap:18px}
 .ovrow1 section,.ovrow2 section{margin:0}
+.my-schedules-panel{margin-top:18px}
+.my-schedules-panel .hd{margin-bottom:9px}
+.my-schedules-scroll{max-height:310px;overflow:auto;border:1px solid var(--bd);border-radius:12px;background:rgba(255,255,255,.65)}
+.my-schedules-scroll table{min-width:660px}
+.my-schedules-scroll th,.my-schedules-scroll td{padding:8px 10px}
+.my-schedules-empty{padding:12px 4px;color:var(--mu);font-size:12px}
+
 .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.hd h2{margin:0}.hd h2::before{display:none}
 .hd button{background:rgba(255,255,255,.85);color:var(--mar);border:1px solid #e3def5;padding:6px 14px;font-size:12px;margin:0}
 .focus{background:#fff!important}
@@ -279,7 +286,20 @@ body.locked .app{display:none}
 .ttlrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .who{background:rgba(154,121,223,.14);color:#6a4fc0;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500}.who:empty{display:none}
 
-.proofbox{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 0;background:transparent;border-radius:0;margin:4px 0}.proofbox input[type=file]{min-width:150px;width:auto;padding:4px;font-size:11px}.proofbox button{margin:0}.prooflocked{color:#26734d;font-weight:600;font-size:11px}.momfiles{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.momfiles input{min-width:150px;width:100%;padding:6px}
+.proofbox{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 0;background:transparent;border-radius:0;margin:4px 0}.proofbox input[type=file]{min-width:150px;width:auto;padding:4px;font-size:11px}.proofbox button{margin:0}
+.proof-admin-menu{position:relative;display:inline-block;margin:3px 0;vertical-align:middle}
+.proof-admin-menu>summary{list-style:none;cursor:pointer;display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--bd);border-radius:8px;background:#fff;color:var(--mar);font-size:17px;font-weight:600;line-height:1;user-select:none}
+.proof-admin-menu>summary::-webkit-details-marker{display:none}
+.proof-admin-menu[open]>summary{background:#f0edfa;border-color:#cfc5ec}
+.proof-admin-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:80;width:min(245px,82vw);padding:10px;display:flex;flex-direction:column;align-items:stretch;gap:7px;border:1px solid var(--bd);border-radius:12px;background:#fff;box-shadow:0 12px 32px rgba(35,30,80,.18);white-space:normal}
+.proof-admin-pop>label:not(.proof-admin-file){font-size:11px;font-weight:600;color:var(--mu)}
+.proof-admin-pop select{width:100%;min-width:0;padding:7px 9px;font-size:12px}
+.proof-admin-pop button{margin:0;width:100%;padding:7px 10px;font-size:11px}
+.proof-admin-pop .proof-admin-file{display:block;border:1px dashed var(--bd);border-radius:8px;padding:7px;font-size:11px;color:var(--mu);cursor:pointer}
+.proof-admin-pop .proof-admin-file input{display:block;width:100%;min-width:0;margin-top:5px;padding:0;font-size:10px}
+.proof-admin-divider{height:1px;background:var(--bd);margin:2px 0}
+.proof-admin-pop .danger{color:#a52b2b;border-color:#f0cccc}
+.prooflocked{color:#26734d;font-weight:600;font-size:11px}.momfiles{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.momfiles input{min-width:150px;width:100%;padding:6px}
 .cro-progress-wrap{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 0}
 .cro-progress-open{padding:5px 9px!important;font-size:11px!important;line-height:1.2;border-radius:7px!important;min-height:26px}
 .cro-progress-panel{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:6px 8px;border:1px solid var(--bd,#ddd);border-radius:8px;background:var(--card,#fff);box-shadow:0 2px 8px rgba(30,25,70,.06)}
@@ -361,6 +381,10 @@ body.locked .app{display:none}
       <section><div class="hd"><h2>Program tracker</h2><button data-go="pi">See all</button></div><div class="trk"><canvas id="trk"></canvas></div></section>
       <section><div class="hd"><h2>Closing soon</h2><button data-go="cal">See all</button></div><div id="soon"></div></section>
     </div>
+    <section class="my-schedules-panel">
+      <div class="hd"><h2 id="mySchedulesTitle">My upcoming schedules</h2><button data-go="cal">Open calendar</button></div>
+      <div id="mySchedulesList"></div>
+    </section>
   </div>
   <div class="g2" id="pr">
     <section><h2>Completion by program</h2><div class="list" id="plist"></div>
@@ -612,7 +636,7 @@ function schoolView0(){
       const proof = (DATA.__proofs || []).find(p => p.school.toLowerCase() === hit.toLowerCase() && p.program === r.p.name && p.step === t);
       let action = "";
       if (ME && ME.role === "admin") {
-        action = `<div class="proofbox"><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Update status</button>${proof && proof.id ? `<button class="ghost" data-proof="${esc(proof.id)}">View / download photo</button><input type="file" accept="image/jpeg,image/png,image/webp" data-admin-proof-photo style="max-width:150px;font-size:11px" aria-label="Choose replacement job-card photo"><button type="button" class="ghost" data-proof-replace="${esc(proof.id)}" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Replace photo</button><button type="button" class="ghost" data-proof-delete="${esc(proof.id)}">Delete photo</button>` : ""}</div>`;
+        action = `<details class="proof-admin-menu"><summary title="Edit progress and proof" aria-label="Edit progress and proof">✎</summary><div class="proof-admin-pop"><label>Status</label><select class="step-status" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}"><option ${/done|completed/i.test(v) && !/partial/i.test(v) ? "selected" : ""} value="Done">Done</option><option ${/partial|progress/i.test(v) ? "selected" : ""} value="Partially Done">Partially Done</option><option ${!v || /not|pending/i.test(v) ? "selected" : ""} value="Not Done">Not Done</option></select><button data-step-save="1" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Save status</button>${proof && proof.id ? `<div class="proof-admin-divider"></div><button type="button" class="ghost" data-proof="${esc(proof.id)}">View / download photo</button><label class="proof-admin-file">Choose replacement photo<input type="file" accept="image/jpeg,image/png,image/webp" data-admin-proof-photo aria-label="Choose replacement job-card photo"></label><button type="button" class="ghost" data-proof-replace="${esc(proof.id)}" data-program="${esc(r.p.name)}" data-school="${esc(hit)}" data-step="${esc(t)}">Replace photo</button><button type="button" class="ghost danger" data-proof-delete="${esc(proof.id)}">Delete photo</button>` : `<small class="sub">No proof photo submitted yet.</small>`}</div></details>`;
       } else if (ME && ME.role === "cro") {
         action = `<div class="cro-progress-wrap">
             ${proof ? `<span class="prooflocked">✓ ${esc(proof.status)} · status locked</span>` : ""}
@@ -1090,7 +1114,36 @@ function schoolSteps(school, progNames){
   });
   return {d, t, v: n ? sc / n : 0};
 }
+function renderMyUpcomingSchedules(){
+  const box = $("mySchedulesList");
+  if (!box || !ME) return;
+  const role = ME.role || "";
+  $("mySchedulesTitle").textContent = role === "admin" ? "All upcoming schedules" :
+    role === "branch_admin" ? "Branch upcoming schedules" : "My upcoming schedules";
+  const today = isoToday();
+  const rows = (DATA.__schedules || [])
+    .filter(b => b.date && b.date >= today && !/cancel+ed/i.test(String(b.status || "")))
+    .slice()
+    .sort((a,b) => a.date.localeCompare(b.date) ||
+      String(a.shift || "").localeCompare(String(b.shift || "")) ||
+      String(a.time || "").localeCompare(String(b.time || "")));
+  if (!rows.length) {
+    box.innerHTML = '<div class="my-schedules-empty">No upcoming booked schedules assigned to your account.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
+    (role === "admin" || role === "branch_admin" ? '<th>Assigned to</th>' : '') +
+    '<th>Status</th></tr></thead><tbody>' + rows.map(b => {
+      const programsText = (b.programs || []).join(", ") || "–";
+      return '<tr><td><b>' + esc(b.date) + '</b></td><td style="white-space:normal;min-width:150px">' + esc(b.school || "–") +
+        '</td><td style="white-space:normal;min-width:160px">' + esc(programsText) + '</td><td>' +
+        esc([b.shift,b.time].filter(Boolean).join(" · ") || "–") + '</td>' +
+        (role === "admin" || role === "branch_admin" ? '<td>' + esc(b.consultant || "–") + '</td>' : '') +
+        '<td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td></tr>';
+    }).join("") + '</tbody></table></div>';
+}
 function renderOverview(st, board){
+  renderMyUpcomingSchedules();
   ovCharts.forEach(c => c.destroy()); ovCharts = [];
   const {active, names, all} = st, total = all[0] + all[1] + all[2], today = isoToday(), pc = i => total ? Math.round(all[i] / total * 100) : 0;
   $("stats").innerHTML = `<span class="pill"><b>${names.length}</b> schools</span><span class="pill"><b>${active.length}</b> programs</span><span class="pill"><b>${all[0]} / ${total}</b> steps done</span><span class="pill soft">${esc(st.deltaTxt)}</span>`;
