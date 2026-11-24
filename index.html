@@ -380,7 +380,7 @@ body.locked .app{display:none}
 <div class="app">
 <header class="topbar">
   <div class="brand"><img id="sbLogo" alt="EIMCTA logo"><div class="ttl">Third Eye<small>by EIMCTA</small></div></div>
-  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
+  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#mysch" id="navMySchedule">My Schedule</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
   <div class="live"><i></i><span id="upd">Loading data…</span></div>
   <div class="me" id="me" style="display:none"><span id="meName"></span><button class="ghost sm" id="chpw">Password</button><button class="ghost sm" id="signout">Sign out</button></div>
 </header>
@@ -412,7 +412,7 @@ body.locked .app{display:none}
     <section><h2>School leaderboard</h2><div class="list" id="sclist"></div></section>
   </div>
   <section id="pi"><h2>Status breakdown by school</h2>
-    <div class="sbtop"><p class="sub" id="sbsum"></p><select id="sbmode" aria-label="Chart view"><option value="n">Show number of steps</option><option value="p">Show percent</option></select></div>
+    <div class="sbtop"><p class="sub" id="sbsum"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><select id="sbstatus" aria-label="Filter status"><option value="all">All statuses</option><option value="done">Done only</option><option value="partial">Partially done only</option><option value="not">Not started only</option></select><select id="sbmode" aria-label="Chart view"><option value="n">Show number of steps</option><option value="p">Show percent</option></select></div></div>
     <div class="chartwrap" id="sbwrap"><canvas id="sbar"></canvas></div></section>
   <section id="dt"><h2>Program detail</h2>
     <p style="margin-top:0"><select id="sel" aria-label="Choose a program"></select></p>
@@ -426,6 +426,9 @@ body.locked .app{display:none}
     </div>
     <div class="tabs"><button class="tb on" data-t="p">Progress</button><button class="tb" data-t="t">Target dates</button></div>
     <div id="sres"></div><div id="tres" style="display:none"></div></section>
+<section id="mysch"><div class="hd"><h2>My Schedule</h2><span class="sub" id="myScheduleScope"></span></div>
+  <div class="sbtop" style="justify-content:flex-start;gap:10px;flex-wrap:wrap"><label class="sub" for="myScheduleBranch">Branch</label><select id="myScheduleBranch" aria-label="Filter schedules by branch"><option value="">All branches</option><option value="Kathmandu">Kathmandu</option><option value="Itahari">Itahari</option></select></div>
+  <div id="mySchedulePageList"></div></section>
 <section id="cal"><h2>Consultant calendar</h2>
 
     <div class="calbar"><select id="cb" aria-label="Branch"><option value="">All branches</option><option value="Kathmandu">Kathmandu branch</option><option value="Itahari">Itahari branch</option></select><select id="cc" aria-label="Consultant"></select><button class="ghost" id="cprev" aria-label="Previous month">‹</button><b id="cmon"></b><button class="ghost" id="cnext" aria-label="Next month">›</button><button class="ghost" id="ctod">Today</button></div>
@@ -577,6 +580,7 @@ function render(){
   detail();
   schoolView();
   calendarView();
+  renderMySchedulePage();
 }
 
 let pies = [], sbActive = [];
@@ -592,23 +596,21 @@ function renderPies(active){
     s.vals.forEach(v => { const x = score(v); e.c[x === 1 ? 0 : x ? 1 : 2]++; });
   }));
   const rows = [...m.values()].sort((a, b) => b.c[0] - a.c[0] || a.n.localeCompare(b.n));
-  const pctMode = $("sbmode").value === "p", tot = r => r.c[0] + r.c[1] + r.c[2] || 1;
-  $("sbsum").textContent = rows.length + " schools · " + all[0] + " steps done, " + all[1] + " partly done, " + all[2] + " not started";
+  const pctMode = $("sbmode").value === "p", filter = $("sbstatus") ? $("sbstatus").value : "all";
+  const tot = r => r.c[0] + r.c[1] + r.c[2] || 1;
+  const totalText = filter === "done" ? all[0] + " steps done" : filter === "partial" ? all[1] + " steps partly done" : filter === "not" ? all[2] + " steps not started" : all[0] + " steps done, " + all[1] + " partly done, " + all[2] + " not started";
+  $("sbsum").textContent = rows.length + " schools · " + totalText;
   $("sbwrap").style.height = Math.max(280, rows.length * 30 + 80) + "px";
-  const ds = (label, i, color) => ({label, backgroundColor: color, borderRadius: 3, data: rows.map(r => pctMode ? Math.round(r.c[i] / tot(r) * 1000) / 10 : r.c[i])});
+  const defs = [{key:"done",label:"Done",i:0,color:"#9a79df"},{key:"partial",label:"Partly done",i:1,color:"#ee8f6e"},{key:"not",label:"Not started",i:2,color:"#8dbbf0"}];
+  const chosen = filter === "all" ? defs : defs.filter(d => d.key === filter);
+  const ds = d => ({label:d.label, backgroundColor:d.color, borderRadius:3, data:rows.map(r => pctMode ? Math.round(r.c[d.i] / tot(r) * 1000) / 10 : r.c[d.i])});
   pies.push(new Chart($("sbar"), {
-    type: "bar",
-    data: {labels: rows.map(r => r.n), datasets: [ds("Done", 0, "#9a79df"), ds("Partly done", 1, "#ee8f6e"), ds("Not started", 2, "#8dbbf0")]},
-    options: {
-      indexAxis: "y", maintainAspectRatio: false,
-      plugins: {
-        legend: {position: "top", align: "end", labels: {boxWidth: 12, boxHeight: 12}},
-        tooltip: {callbacks: {label: c => { const r = rows[c.dataIndex], n = r.c[c.datasetIndex]; return c.dataset.label + ": " + n + " steps (" + Math.round(n / tot(r) * 100) + "%)"; }}}
-      },
-      scales: {
-        x: {stacked: true, max: pctMode ? 100 : undefined, grid: {color: "#ece9f6"}, title: {display: true, text: pctMode ? "Percent of steps" : "Number of steps"}, ticks: {callback: v => pctMode ? v + "%" : v}},
-        y: {stacked: true, grid: {display: false}, ticks: {autoSkip: false, font: {size: 11}}}
-      }
+    type:"bar", data:{labels:rows.map(r=>r.n),datasets:chosen.map(ds)},
+    options:{indexAxis:"y",maintainAspectRatio:false,
+      plugins:{legend:{position:"top",align:"end",labels:{boxWidth:12,boxHeight:12}},
+        tooltip:{callbacks:{label:c=>{const d=chosen[c.datasetIndex],r=rows[c.dataIndex],n=r.c[d.i];return d.label+": "+n+" steps ("+Math.round(n/tot(r)*100)+"%)";}}}},
+      scales:{x:{stacked:filter==="all",max:pctMode?100:undefined,grid:{color:"#ece9f6"},title:{display:true,text:pctMode?"Percent of steps":"Number of steps"},ticks:{callback:v=>pctMode?v+"%":v}},
+        y:{stacked:filter==="all",grid:{display:false},ticks:{autoSkip:false,font:{size:11}}}}
     }
   }));
 }
@@ -674,6 +676,9 @@ function schoolView0(){
               </div>
             </div>
           </div>`;
+      }
+      if (proof && proof.id && ME && ME.role !== "admin") {
+        action += ` <button type="button" class="ghost sm" data-proof="${esc(proof.id)}" title="View job-card photo">View photo</button>`;
       }
       h += `<tr><td style="padding-left:30px">${esc(t)}</td><td><span class="chip ${x === 1 ? "ok" : x ? "pa" : ""}">${esc(v || "–")}</span>${action}</td><td></td></tr>`;
     });
@@ -794,7 +799,7 @@ $("sres").onchange = e => {
   // "Not Done" is deliberately a no-op: no proof request and no sheet update.
   upload.hidden = status.value !== "Done" && status.value !== "Partially Done";
 };
-const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
+const VIEWS = {ov: "Dashboard", mysch: "My Schedule", pr: "Programs & Schools", pi: "Status Breakdown", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
 function show(id){
   if (!VIEWS[id]) id = "ov";
   Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
@@ -803,6 +808,7 @@ function show(id){
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
   window.scrollTo(0, 0);
   if (id === "usr") loadUsers();
+  if (id === "mysch") renderMySchedulePage();
   if (id === "gps") setTimeout(() => { initK(); if (kmap) kmap.invalidateSize(); gLocate(); gPlacesUi(); gHistory(); gBanner(); gUi(); }, 80);
   setTimeout(() => { [...ovCharts, ...pies].forEach(c => c && c.resize()); }, 60);
 }
@@ -1014,7 +1020,7 @@ function openBook(date){
     <div class="fl"><span>Nepali date (BS) for the invitation</span><input id="f_bs" placeholder="e.g. Ashoj 23, 2083 (leave empty to use the English date)"></div>
     <div class="fl"><span>4. Resources</span><textarea id="f_res" rows="2" placeholder="Type the resources needed"></textarea></div>
     <div class="fl"><span>5. Participation</span>${msBox("f_pa", "Select participants…")}<input id="f_oth" placeholder="If you choose Others, type here" style="margin-top:8px"></div>
-    <div class="fl"><span>6. Assign job to</span><select id="f_assignee"><option value="">Select active user…</option>${(DATA.__assignableUsers || []).map(u => `<option value="${esc(u.email)}" data-name="${esc(u.name)}" data-role="${esc(u.role)}">${esc(u.name)} · ${esc(u.role.replace("_", " "))}</option>`).join("")}</select></div>
+    <div class="fl"><span>6. Assign job to</span><select id="f_assignee"><option value="">Select active user…</option>${(DATA.__assignableUsers || []).map(u => `<option value="${esc(u.email)}" data-name="${esc(u.name)}" data-role="${esc(u.role)}" data-branch="${esc(u.branch || "")}">${esc(u.name)} · ${esc(u.role.replace("_", " "))}</option>`).join("")}</select></div>
     <div id="f_msg" class="sub" style="font-weight:600"></div>
     <div class="acts"><button id="f_save">Book schedule</button><button class="ghost" id="f_cancel">Cancel</button></div>`;
   $("bkf").dataset.date = date;
@@ -1042,6 +1048,8 @@ $("bkf").addEventListener("click", async e => {
   const oth = $("f_oth").value.trim();
   const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), bs: $("f_bs").value.trim(), school: $("f_school").value, assigneeEmail: $("f_assignee").value,
     consultant: ($("f_assignee").selectedOptions[0] && $("f_assignee").selectedOptions[0].dataset.name) || "",
+    assigneeName: ($("f_assignee").selectedOptions[0] && $("f_assignee").selectedOptions[0].dataset.name) || "",
+    branch: ($("f_assignee").selectedOptions[0] && $("f_assignee").selectedOptions[0].dataset.branch) || "",
     programs: msVals("f_ag"), subs: msVals("f_sub"), services: [], status: "Booked", resources: $("f_res").value.trim(),
     participation: msVals("f_pa").map(v => v === "Others" && oth ? "Others: " + oth : v)};
   if (!b.school) return msg("Please choose a school.");
@@ -1052,7 +1060,7 @@ $("bkf").addEventListener("click", async e => {
   msg("Booking…", true);
   const j = await post({action: "saveSchedule", row: b});
   if (!j.ok) return msg(j.error || "Could not book. Please try again.");
-  b.id = j.id; b.invite = j.invite || ""; (DATA.__schedules = DATA.__schedules || []).push(b);
+  b.id = j.id; b.invite = j.invite || ""; (DATA.__schedules = DATA.__schedules || []).push(b); renderMySchedulePage();
   if (j.invite_error) alert("Booked, but the invitation could not be created yet: " + j.invite_error);
   $("bk").close(); calendarView();
 });
@@ -1120,6 +1128,8 @@ function splashDone(ok){
 setTimeout(() => splashDone(false), 25000);
 
 $("sbmode").onchange = () => renderPies(sbActive);
+$("sbstatus").onchange = () => renderPies(sbActive);
+$("myScheduleBranch").onchange = renderMySchedulePage;
 
 // ===== Dashboard home (glass layout) =====
 let ovCharts = [], ovState = null;
@@ -1140,7 +1150,7 @@ function renderMyUpcomingSchedules(){
   if (!box || !ME) return;
   const role = ME.role || "";
   $("mySchedulesTitle").textContent = role === "admin" ? "All assigned jobs" :
-    role === "branch_admin" ? "Branch assigned jobs" : "My assigned jobs";
+    (role === "branch_admin" || role === "cro") ? "Branch assigned jobs" : "My assigned jobs";
   const rows = (DATA.__schedules || [])
     .filter(b => b.date && !/done|cancel+ed/i.test(String(b.status || "")))
     .slice()
@@ -1152,15 +1162,52 @@ function renderMyUpcomingSchedules(){
     return;
   }
   box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
-    (role === "admin" || role === "branch_admin" ? '<th>Assigned to</th>' : '') +
+    (role === "admin" || role === "branch_admin" || role === "cro" ? '<th>Assigned to</th>' : '') +
     '<th>Status</th></tr></thead><tbody>' + rows.map(b => {
       const programsText = (b.programs || []).join(", ") || "–";
       return '<tr><td><b>' + esc(b.date) + '</b></td><td style="white-space:normal;min-width:150px">' + esc(b.school || "–") +
         '</td><td style="white-space:normal;min-width:160px">' + esc(programsText) + '</td><td>' +
         esc([b.shift,b.time].filter(Boolean).join(" · ") || "–") + '</td>' +
-        (role === "admin" || role === "branch_admin" ? '<td>' + esc(b.consultant || "–") + '</td>' : '') +
+        (role === "admin" || role === "branch_admin" || role === "cro" ? '<td>' + esc(b.assigneeName || b.consultant || "–") + '</td>' : '') +
         '<td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td></tr>';
     }).join("") + '</tbody></table></div>';
+}
+function renderMySchedulePage(){
+  const box = $("mySchedulePageList");
+  if (!box || !ME) return;
+  const role = ME.role || "";
+  const admin = role === "admin";
+  const branchScoped = role === "cro" || role === "branch_admin";
+  const branchSelect = $("myScheduleBranch");
+  const scope = $("myScheduleScope");
+  if (admin) {
+    branchSelect.disabled = false;
+    scope.textContent = "All users · all branches";
+  } else if (branchScoped) {
+    const own = ME.branch || "";
+    branchSelect.innerHTML = `<option value="${esc(own)}">${esc(own || "Your branch")}</option>`;
+    branchSelect.value = own;
+    branchSelect.disabled = true;
+    scope.textContent = (role === "cro" ? "CRO · " : "Branch administrator · ") + (own || "assigned branch");
+  } else {
+    branchSelect.innerHTML = '<option value="">My bookings</option>';
+    branchSelect.value = "";
+    branchSelect.disabled = true;
+    scope.textContent = "Only schedules assigned to your login";
+  }
+  const branch = branchSelect.value;
+  const rows = (DATA.__schedules || []).filter(b => !branch || b.branch === branch)
+    .slice().sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")) || String(a.shift||"").localeCompare(String(b.shift||"")));
+  if (!rows.length) { box.innerHTML = '<div class="my-schedules-empty">No booked programs found for this selection.</div>'; return; }
+  box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
+    (admin || branchScoped ? '<th>Assigned to</th>' : '') + '<th>Branch</th><th>Status</th></tr></thead><tbody>' + rows.map(b =>
+      '<tr><td><b>' + esc(b.date || "–") + '</b>' + (b.bs ? '<div class="sub">BS: ' + esc(b.bs) + '</div>' : '') + '</td>' +
+      '<td style="white-space:normal;min-width:150px">' + esc(b.school || "–") + '</td>' +
+      '<td style="white-space:normal;min-width:170px">' + esc((b.programs || []).join(", ") || "–") + '</td>' +
+      '<td>' + esc([b.shift,b.time].filter(Boolean).join(" · ") || "–") + '</td>' +
+      (admin || branchScoped ? '<td>' + esc(b.assigneeName || b.consultant || "–") + '</td>' : '') +
+      '<td>' + esc(b.branch || "–") + '</td><td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td></tr>'
+    ).join("") + '</tbody></table></div>';
 }
 function renderOverview(st, board){
   renderMyUpcomingSchedules();
