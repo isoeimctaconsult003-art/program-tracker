@@ -381,7 +381,7 @@ body.locked .app{display:none}
 <div class="app">
 <header class="topbar">
   <div class="brand"><img id="sbLogo" alt="EIMCTA logo"><div class="ttl">Third Eye<small>by EIMCTA</small></div></div>
-  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#mysch" id="navMySchedule">My Schedule</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
+  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#mysch" id="navMySchedule">Schedule</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
   <div class="live"><i></i><span id="upd">Loading data…</span></div>
   <div class="me" id="me" style="display:none"><span id="meName"></span><button class="ghost sm" id="chpw">Password</button><button class="ghost sm" id="signout">Sign out</button></div>
 </header>
@@ -427,7 +427,7 @@ body.locked .app{display:none}
     </div>
     <div class="tabs"><button class="tb on" data-t="p">Progress</button><button class="tb" data-t="t">Target dates</button></div>
     <div id="sres"></div><div id="tres" style="display:none"></div></section>
-<section id="mysch"><div class="hd"><h2>My Schedule</h2><span class="sub" id="myScheduleScope"></span></div>
+<section id="mysch"><div class="hd"><h2>Schedule</h2><span class="sub" id="myScheduleScope"></span></div>
   <div class="sbtop" style="justify-content:flex-start;gap:10px;flex-wrap:wrap"><label class="sub" for="myScheduleBranch">Branch</label><select id="myScheduleBranch" aria-label="Filter schedules by branch"><option value="">All branches</option><option value="Kathmandu">Kathmandu</option><option value="Itahari">Itahari</option></select></div>
   <div id="mySchedulePageList"></div></section>
 <section id="cal"><h2>Consultant calendar</h2>
@@ -801,7 +801,7 @@ $("sres").onchange = e => {
   // "Not Done" is deliberately a no-op: no proof request and no sheet update.
   upload.hidden = status.value !== "Done" && status.value !== "Partially Done";
 };
-const VIEWS = {ov: "Dashboard", mysch: "My Schedule", pr: "Programs & Schools", pi: "Status Breakdown", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
+const VIEWS = {ov: "Dashboard", mysch: "Schedule", pr: "Programs & Schools", pi: "Status Breakdown", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
 function show(id){
   if (!VIEWS[id]) id = "ov";
   Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
