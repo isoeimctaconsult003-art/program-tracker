@@ -568,7 +568,8 @@ function render(){
     }).join("");
     h += `<tr><td>${esc(n)}</td>${cells}<td class="c">${cnt ? pct(tot / cnt) : "–"}</td></tr>`;
   });
-  $("heat").innerHTML = h;
+  const heat = $("heat");
+  if (heat) heat.innerHTML = h;
   renderPies(active);
   const sel = $("sel"), keep = sel.value;
   sel.innerHTML = programs.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join("");
