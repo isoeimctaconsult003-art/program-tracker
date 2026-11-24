@@ -352,12 +352,12 @@ body.locked .app{display:none}
    <a class="lg-link" id="lg_fg" href="#">Forgot password?</a>
   </div>
   <div id="lgv_f1" hidden>
-   <p class="sub">Enter your username or email. We will send a 6-digit code to your email.</p>
+
    <div class="fl"><span>Username or email</span><input id="lg_fe" type="text" placeholder="Username or email"></div>
    <button type="button" class="wide" id="lg_fs">Send the code</button><br><a class="lg-link" id="lg_fb" href="#">← Back to sign in</a>
   </div>
   <div id="lgv_f2" hidden>
-   <p class="sub">Type the code from your email and choose a new password.</p>
+
    <input type="hidden" id="lg_re">
    <div class="fl"><span>6-digit code</span><input id="lg_c" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
    <div class="fl"><span>New password (8 or more characters)</span><div class="pw"><input id="lg_np" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye="lg_np" aria-label="Show password"><svg class="onn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button></div></div>
@@ -427,40 +427,40 @@ body.locked .app{display:none}
     <div class="tabs"><button class="tb on" data-t="p">Progress</button><button class="tb" data-t="t">Target dates</button></div>
     <div id="sres"></div><div id="tres" style="display:none"></div></section>
 <section id="cal"><h2>Consultant calendar</h2>
-    <p class="sub" style="margin-top:-6px">Pick a consultant to see which days are busy. A day is busy when one of their target dates opens, is running, or closes. Click today or a coming date to book a schedule.</p>
+
     <div class="calbar"><select id="cb" aria-label="Branch"><option value="">All branches</option><option value="Kathmandu">Kathmandu branch</option><option value="Itahari">Itahari branch</option></select><select id="cc" aria-label="Consultant"></select><button class="ghost" id="cprev" aria-label="Previous month">‹</button><b id="cmon"></b><button class="ghost" id="cnext" aria-label="Next month">›</button><button class="ghost" id="ctod">Today</button></div>
     <div class="cal" id="cgrid"></div>
     <div class="legend"><span><i style="background:#ffe69a;border:1px solid #e0b100"></i>Booked</span><span><i style="background:#bfe8cf;border:1px solid #2f9e77"></i>Done</span><span><i style="background:rgba(154,121,223,.25)"></i>Target date only</span><span><i style="background:#c8423f;border-radius:50%"></i>Closing date</span><span><i style="background:#9a79df;border-radius:50%"></i>Opening date</span><span><i style="background:#fff;border:1px solid var(--bd)"></i>Free</span></div>
     <div id="cday"></div></section>
 
 <section id="usr"><h2>Users &amp; access</h2>
-    <p class="sub" style="margin-top:-6px">Super administrators manage everyone. Branch administrators manage the consultants of their own branch. A new user gets a temporary password by email and can change it with the Password button. The full name must match the consultant's name in the booking list, for example "Pasang Sherpa".</p>
+
     <div class="two"><div class="fl"><span>Email</span><input id="u_e" type="email" placeholder="name@example.com"></div><div class="fl"><span>Full name</span><input id="u_n" placeholder="e.g. Pasang Sherpa"></div></div>
     <div class="two"><div class="fl"><span>Username (optional, used to sign in)</span><input id="u_u" placeholder="e.g. pasang"></div><div class="fl" id="u_rolebox"><span>Role</span><select id="u_r"><option value="consultant">Consultant</option><option value="branch_admin">Branch administrator</option><option value="cro">CRO</option><option value="admin">Super administrator</option></select></div></div>
     <div class="two"><div class="fl" id="u_brbox"><span>Branch</span><select id="u_b"><option value="">No branch (super administrator)</option><option>Kathmandu</option><option>Itahari</option></select></div><div class="fl"><span>&nbsp;</span><button id="u_add" style="margin:0">Add user &amp; email the password</button></div></div>
     <div id="u_msg" class="sub" style="font-weight:600;margin-bottom:10px"></div>
     <div class="scroll"><table id="u_tab"></table></div></section>
 <section id="gps"><h2>Travel: live GPS, distance, speed and stops</h2>
-    <p class="sub" style="margin-top:-6px">Travel tracking can start from 10:00 AM to 6:00 PM Nepal time. An active trip can be ended after 6:00 PM. Give consent and allow location access before starting. GPS points with poor accuracy or impossible jumps are ignored; offline points are kept on this device until they can be uploaded.</p>
+
     <div id="g_banner" class="tactive" style="display:none"></div>
     <div class="trgrid">
       <div class="trl">
         <div class="fl"><span>From: your current GPS location</span><div class="srow"><div id="g_from" class="gfrom">Locating…</div><button class="ghost" id="g_loc" style="margin:0">Locate me</button></div></div>
-        <div class="fl"><span>To: places you will visit (add as many as you need)</span><div id="g_dests"></div><p class="sub" style="margin:4px 0 0">Search a place with the bar on the map, then click a result to add it.</p></div>
+        <div class="fl"><span>To: places you will visit (add as many as you need)</span><div id="g_dests"></div></div>
         <div class="two"><div class="fl"><span>Mode of transportation</span><select id="g_mode"><option value="bike">Bike</option><option value="car">Car</option><option value="bus">Bus</option></select></div><div class="fl" id="g_farebox" style="display:none"><span>Actual bus fare paid (Rs.)</span><input id="g_fare" type="number" min="0" step="1" placeholder="e.g. 60"></div></div>
         <label class="sub" style="display:flex;align-items:center;gap:8px;margin:8px 0"><input type="checkbox" id="g_consent" style="width:auto;min-width:16px"> I consent to GPS tracking during my work trip.</label><div class="tbtns"><button id="g_start">▶ Start trip</button><button class="ghost" id="g_end">■ End trip</button></div>
         <div id="g_msg" class="sub" style="font-weight:600;margin-top:8px"></div>
         <div class="gst" id="g_stats"></div>
         <h3 style="margin:16px 0 6px;font-size:14px;color:var(--mar)">Stops detected</h3><div id="g_stops"></div>
         <details class="tset" id="g_set"><summary>Saved places (used to name your stops)</summary><div class="tsb">
-          <p class="sub" style="margin:10px 0 8px">Click the map to drop a pin, then save it. Stops near a saved place are named after it, for example the school's name.</p>
+
           <div class="fl"><span>Save the pin as</span><select id="g_pt"><option value="school">A school</option><option value="office" id="g_poff">A branch office (administrators)</option></select></div>
           <div class="fl" id="g_psb"><span>School</span><select id="g_ps"></select></div>
           <div class="fl" id="g_pob" style="display:none"><span>Branch</span><select id="g_po"><option>Kathmandu</option><option>Itahari</option></select></div>
           <p class="sub" id="g_pcur" style="margin:0 0 8px"></p>
           <button id="g_psave" style="margin:0">Save this pin</button>
         </div></details>
-        <p class="tnote">Keep this page open and the screen on while you travel. Phones pause GPS when the screen locks or the page is in the background, so we ask the phone to keep the screen awake during a trip.</p>
+
       </div>
       <div class="trr">
         <div class="msearch"><div class="srow"><input id="g_q" placeholder="Search a place to visit…"><button class="ghost" id="g_qb" style="margin:0">Search</button></div><div id="g_r" class="msr"></div></div>
@@ -568,7 +568,7 @@ function render(){
     }).join("");
     h += `<tr><td>${esc(n)}</td>${cells}<td class="c">${cnt ? pct(tot / cnt) : "–"}</td></tr>`;
   });
-  const heat = $("heat"); if (heat) heat.innerHTML = h;
+  $("heat").innerHTML = h;
   renderPies(active);
   const sel = $("sel"), keep = sel.value;
   sel.innerHTML = programs.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join("");
@@ -624,7 +624,7 @@ function schoolView0(){
   $("slist").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
   $("ssel").innerHTML = '<option value="">Select a school…</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
   $("ssel").value = names.find(n => n.toLowerCase() === q) || "";
-  if (!q) { out.innerHTML = '<p class="sub">Type or pick a school name to see how many programs it has completed.</p>'; return; }
+  if (!q) { out.innerHTML = ""; return; }
   let hit = names.find(n => n.toLowerCase() === q);
   if (!hit) {
     const mt = names.filter(n => n.toLowerCase().includes(q));
@@ -838,7 +838,7 @@ function rowHtml(t, dirty, isNew){
 const tmsg = (t, ok) => { const m = $("tmsg"); if (m) { m.textContent = t; m.style.color = ok ? "#2f9e77" : "#c8423f"; } };
 function targetView(){
   const out = $("tres");
-  if (!curSchool) { out.innerHTML = $("ss").value.trim() ? $("sres").innerHTML : '<p class="sub">Select a school above to view or add its target dates.</p>'; lastSchool = null; return; }
+  if (!curSchool) { out.innerHTML = $("ss").value.trim() ? $("sres").innerHTML : ""; lastSchool = null; return; }
   if (out.querySelector("tr.dirty") && lastSchool === curSchool) return; // don't wipe unsaved typing on auto-refresh
   lastSchool = curSchool;
   const list = (DATA.__targets || []).filter(t => t.school.toLowerCase() === curSchool.toLowerCase());
