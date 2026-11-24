@@ -313,6 +313,26 @@ body.locked .app{display:none}
 .cro-proof-upload small{font-size:10px;color:var(--mu);margin:0!important}
 .cro-proof-upload button{padding:5px 9px!important;font-size:11px!important;min-height:26px}
 @media(max-width:700px){.proofbox{align-items:center}.proofbox input[type=file]{width:auto}.cro-progress-panel{max-width:100%}.cro-proof-upload{width:100%}.cro-proof-upload input[type=file]{max-width:100%}}
+
+/* Mobile-first usability improvements */
+@media (max-width: 760px) {
+  .topbar{height:auto;min-height:56px;flex-wrap:wrap;padding:8px 12px;gap:8px}
+  .topbar nav{order:3;width:100%;overflow-x:auto;white-space:nowrap;display:flex;gap:6px;padding:4px 0;scrollbar-width:thin}
+  .topbar nav a{flex:0 0 auto;padding:8px 10px;font-size:12px}
+  .brand{flex:1}.live{font-size:11px}.me{width:100%;justify-content:flex-end}
+  .content{padding:12px}.top{align-items:flex-start;gap:10px;flex-wrap:wrap}.acts2{width:100%;display:flex;flex-wrap:wrap;gap:8px}.acts2 button{flex:1;min-width:110px}
+  .ovrow1,.ovrow2,.g2,.trgrid{grid-template-columns:1fr!important}
+  .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  section{padding:13px;border-radius:14px}h1{font-size:22px}h2{font-size:16px}
+  .scroll,.my-schedules-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:620px;font-size:12px}th,td{padding:8px 7px}
+  input,select,textarea{max-width:100%;font-size:16px!important}
+  button{min-height:40px}.fcards{grid-template-columns:1fr!important}.cal{gap:3px}.cd{min-height:48px;padding:4px;font-size:11px}
+  #gmap{height:320px}.trgrid{gap:12px}.flt2{flex-wrap:wrap}.flt2>*{min-width:0;flex:1}
+  dialog{max-width:calc(100vw - 20px);width:calc(100vw - 20px);padding:12px}
+  .school-lookup-tools{display:flex;flex-wrap:wrap}.school-lookup-tools>*{width:100%!important;min-width:0!important}
+}
+@media (max-width: 420px){.stats{grid-template-columns:1fr 1fr}.topbar .brand .ttl{font-size:16px}.who{font-size:11px}.calbar{flex-wrap:wrap}.calbar select{min-width:0;flex:1}}
 </style>
 <meta name="theme-color" content="#26215c">
 
@@ -360,7 +380,7 @@ body.locked .app{display:none}
 <div class="app">
 <header class="topbar">
   <div class="brand"><img id="sbLogo" alt="EIMCTA logo"><div class="ttl">Third Eye<small>by EIMCTA</small></div></div>
-  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#mx">Matrix</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
+  <nav><a href="#ov">Dashboard</a><a href="#pr">Programs</a><a href="#pi">Status</a><a href="#dt">Detail</a><a href="#sl">Schools</a><a href="#cal">Calendar</a><a href="#gps">Travel</a><a href="#usr" id="navUsr" style="display:none">Users</a></nav>
   <div class="live"><i></i><span id="upd">Loading data…</span></div>
   <div class="me" id="me" style="display:none"><span id="meName"></span><button class="ghost sm" id="chpw">Password</button><button class="ghost sm" id="signout">Sign out</button></div>
 </header>
@@ -382,7 +402,7 @@ body.locked .app{display:none}
       <section><div class="hd"><h2>Closing soon</h2><button data-go="cal">See all</button></div><div id="soon"></div></section>
     </div>
     <section class="my-schedules-panel">
-      <div class="hd"><h2 id="mySchedulesTitle">My upcoming schedules</h2><button data-go="cal">Open calendar</button></div>
+      <div class="hd"><h2 id="mySchedulesTitle">My assigned jobs</h2><button data-go="cal">Open calendar</button></div>
       <div id="mySchedulesList"></div>
     </section>
   </div>
@@ -394,7 +414,6 @@ body.locked .app{display:none}
   <section id="pi"><h2>Status breakdown by school</h2>
     <div class="sbtop"><p class="sub" id="sbsum"></p><select id="sbmode" aria-label="Chart view"><option value="n">Show number of steps</option><option value="p">Show percent</option></select></div>
     <div class="chartwrap" id="sbwrap"><canvas id="sbar"></canvas></div></section>
-  <section id="mx"><h2>School × program progress</h2><div class="scroll"><table class="heat" id="heat"></table></div></section>
   <section id="dt"><h2>Program detail</h2>
     <p style="margin-top:0"><select id="sel" aria-label="Choose a program"></select></p>
     <div class="scroll"><table id="det"></table></div></section>
@@ -774,7 +793,7 @@ $("sres").onchange = e => {
   // "Not Done" is deliberately a no-op: no proof request and no sheet update.
   upload.hidden = status.value !== "Done" && status.value !== "Partially Done";
 };
-const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", mx: "Progress Matrix", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
+const VIEWS = {ov: "Dashboard", pr: "Programs & Schools", pi: "Status Breakdown", dt: "Program Detail", sl: "School Lookup", cal: "Calendar", usr: "Users", gps: "Travel"};
 function show(id){
   if (!VIEWS[id]) id = "ov";
   Object.keys(VIEWS).forEach(k => $(k).style.display = k === id ? "" : "none");
@@ -910,7 +929,7 @@ function evOn(items, d){
 }
 const fmt = d => new Date(d + "T00:00:00").toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long", year: "numeric"});
 function dayPanel(items){
-  const canDone = !!ME && (ME.role === "admin" || ME.role === "branch_admin");
+  const canDone = !!ME && (ME.role === "admin" || ME.role === "branch_admin" || ME.role === "cro");
   const ev = evOn(items, calSel), bk = bookingsOn(calSel), c = $("cc").value, br = $("cb").value, n = ev.length + bk.length;
   const kl = {close: ["Closes", "background:#c8423f;color:#fff"], open: ["Opens", "background:#9a79df;color:#fff"], run: ["In progress", "background:#f3d9c2;color:#6b3a14"]};
   const sh = t => `<h3 style="margin:16px 0 8px;font-size:14px">${t}</h3>`;
@@ -994,7 +1013,7 @@ function openBook(date){
     <div class="fl"><span>Nepali date (BS) for the invitation</span><input id="f_bs" placeholder="e.g. Ashoj 23, 2083 (leave empty to use the English date)"></div>
     <div class="fl"><span>4. Resources</span><textarea id="f_res" rows="2" placeholder="Type the resources needed"></textarea></div>
     <div class="fl"><span>5. Participation</span>${msBox("f_pa", "Select participants…")}<input id="f_oth" placeholder="If you choose Others, type here" style="margin-top:8px"></div>
-    <div class="fl"><span>6. Name of consultant</span><select id="f_cons"><option value="">Select consultant…</option>${cons}</select></div>
+    <div class="fl"><span>6. Assign job to</span><select id="f_assignee"><option value="">Select active user…</option>${(DATA.__assignableUsers || []).map(u => `<option value="${esc(u.email)}" data-name="${esc(u.name)}" data-role="${esc(u.role)}">${esc(u.name)} · ${esc(u.role.replace("_", " "))}</option>`).join("")}</select></div>
     <div id="f_msg" class="sub" style="font-weight:600"></div>
     <div class="acts"><button id="f_save">Book schedule</button><button class="ghost" id="f_cancel">Cancel</button></div>`;
   $("bkf").dataset.date = date;
@@ -1020,13 +1039,14 @@ $("bkf").addEventListener("click", async e => {
   if (!e.target.closest("#f_save")) return;
   const msg = (t, ok) => { $("f_msg").textContent = t; $("f_msg").style.color = ok ? "#2f9e77" : "#c8423f"; };
   const oth = $("f_oth").value.trim();
-  const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), bs: $("f_bs").value.trim(), school: $("f_school").value, consultant: $("f_cons").value,
+  const b = {id: "", date: $("bkf").dataset.date, shift: $("f_shift").value, time: $("f_time").value.trim(), bs: $("f_bs").value.trim(), school: $("f_school").value, assigneeEmail: $("f_assignee").value,
+    consultant: ($("f_assignee").selectedOptions[0] && $("f_assignee").selectedOptions[0].dataset.name) || "",
     programs: msVals("f_ag"), subs: msVals("f_sub"), services: [], status: "Booked", resources: $("f_res").value.trim(),
     participation: msVals("f_pa").map(v => v === "Others" && oth ? "Others: " + oth : v)};
   if (!b.school) return msg("Please choose a school.");
   if (!b.programs.length) return msg("Please choose at least one program in Agenda.");
   if (!b.time) return msg("Please type the time.");
-  if (!b.consultant) return msg("Please choose the consultant.");
+  if (!b.assigneeEmail || !b.consultant) return msg("Please choose the person assigned to this job.");
   const bad = bkConflict(b, DATA.__schedules || []); if (bad) return msg(bad);
   msg("Booking…", true);
   const j = await post({action: "saveSchedule", row: b});
@@ -1118,17 +1138,16 @@ function renderMyUpcomingSchedules(){
   const box = $("mySchedulesList");
   if (!box || !ME) return;
   const role = ME.role || "";
-  $("mySchedulesTitle").textContent = role === "admin" ? "All upcoming schedules" :
-    role === "branch_admin" ? "Branch upcoming schedules" : "My upcoming schedules";
-  const today = isoToday();
+  $("mySchedulesTitle").textContent = role === "admin" ? "All assigned jobs" :
+    role === "branch_admin" ? "Branch assigned jobs" : "My assigned jobs";
   const rows = (DATA.__schedules || [])
-    .filter(b => b.date && b.date >= today && !/cancel+ed/i.test(String(b.status || "")))
+    .filter(b => b.date && !/done|cancel+ed/i.test(String(b.status || "")))
     .slice()
     .sort((a,b) => a.date.localeCompare(b.date) ||
       String(a.shift || "").localeCompare(String(b.shift || "")) ||
       String(a.time || "").localeCompare(String(b.time || "")));
   if (!rows.length) {
-    box.innerHTML = '<div class="my-schedules-empty">No upcoming booked schedules assigned to your account.</div>';
+    box.innerHTML = '<div class="my-schedules-empty">No active jobs assigned to your account.</div>';
     return;
   }
   box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
@@ -1147,7 +1166,7 @@ function renderOverview(st, board){
   ovCharts.forEach(c => c.destroy()); ovCharts = [];
   const {active, names, all} = st, total = all[0] + all[1] + all[2], today = isoToday(), pc = i => total ? Math.round(all[i] / total * 100) : 0;
   $("stats").innerHTML = `<span class="pill"><b>${names.length}</b> schools</span><span class="pill"><b>${active.length}</b> programs</span><span class="pill"><b>${all[0]} / ${total}</b> steps done</span><span class="pill soft">${esc(st.deltaTxt)}</span>`;
-  const up = (DATA.__schedules || []).filter(b => b.date >= today).sort((a, b) => a.date.localeCompare(b.date) || a.shift.localeCompare(b.shift)).slice(0, 3);
+  const up = (DATA.__schedules || []).filter(b => b.date >= today && !/done|cancel+ed/i.test(String(b.status || ""))).sort((a, b) => a.date.localeCompare(b.date) || a.shift.localeCompare(b.shift)).slice(0, 3);
   let cards;
   if (up.length) {
     $("ftitle").textContent = up[0].date === today ? "Today's schedule" : "Upcoming schedule";
