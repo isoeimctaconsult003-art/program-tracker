@@ -777,7 +777,7 @@ $("sres").onclick = async e => {
     const row = saveBtn.closest("tr");
     const statusEl = row && row.querySelector(".step-status");
     const status = statusEl ? statusEl.value : (saveBtn.dataset.status || "");
-    if (status === "Not Done" || !status) { return; } // CRO selecting Not Done intentionally makes no change.
+    if (!status) return;
     const payload = {action:"updateProgramStep", program:d.program, school:d.school, step:d.step, status};
     if (ME && ME.role === "cro") {
       const photo = row && row.querySelector("[data-jobphoto]");
