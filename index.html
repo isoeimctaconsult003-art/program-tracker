@@ -334,6 +334,8 @@ body.locked .app{display:none}
   .school-lookup-tools{display:flex;flex-wrap:wrap}.school-lookup-tools>*{width:100%!important;min-width:0!important}
 }
 @media (max-width: 420px){.stats{grid-template-columns:1fr 1fr}.topbar .brand .ttl{font-size:16px}.who{font-size:11px}.calbar{flex-wrap:wrap}.calbar select{min-width:0;flex:1}}
+
+.visit-report-feed{margin-top:14px}.visit-report-item{padding:12px;border:1px solid var(--bd);border-radius:12px;margin:8px 0;background:rgba(255,255,255,.72)}.visit-report-item p{margin:6px 0;white-space:pre-wrap}.visit-report-dialog{width:min(560px,calc(100% - 24px));border:1px solid var(--bd);border-radius:16px;padding:18px;color:var(--tx);box-shadow:0 18px 60px #0003}.visit-report-dialog::backdrop{background:#1118}.visit-report-dialog label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px}.visit-report-dialog input,.visit-report-dialog textarea{width:100%;box-sizing:border-box;border:1px solid var(--bd);border-radius:9px;padding:10px;font:inherit}.visit-report-dialog textarea{min-height:84px}.visit-report-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.visit-report-actions button{margin:0}
 </style>
 <meta name="theme-color" content="#26215c">
 
@@ -405,6 +407,7 @@ body.locked .app{display:none}
     <section class="my-schedules-panel">
       <div class="hd"><h2 id="mySchedulesTitle">My assigned jobs</h2><button data-go="cal">Open calendar</button></div>
       <div id="mySchedulesList"></div>
+      <div class="visit-report-feed"><div class="hd"><h2>Monthly visit reports</h2><select id="visitReportMonth" aria-label="Filter visit reports by month" style="max-width:150px"><option value="">All months</option></select></div><div id="visitReportFeed"><p class="sub">Loading reports…</p></div></div>
     </section>
   </div>
   <div class="g2" id="pr">
@@ -714,6 +717,7 @@ async function load(){
     if (DATA.__auth === false) { signOut("Your session has ended. Please sign in again."); splashDone(false); return; }
     ME = DATA.__user || ME; meUi(); gBanner();
     build(); render();
+    loadVisitReports();
     msg.style.display = "none";
     splashDone(true);
     $("upd").textContent = "Updated " + new Date().toLocaleTimeString() + " · refreshes every minute";
@@ -777,7 +781,7 @@ $("sres").onclick = async e => {
     const row = saveBtn.closest("tr");
     const statusEl = row && row.querySelector(".step-status");
     const status = statusEl ? statusEl.value : (saveBtn.dataset.status || "");
-    if (!status) return;
+    if (status === "Not Done" || !status) { return; } // CRO selecting Not Done intentionally makes no change.
     const payload = {action:"updateProgramStep", program:d.program, school:d.school, step:d.step, status};
     if (ME && ME.role === "cro") {
       const photo = row && row.querySelector("[data-jobphoto]");
@@ -1147,6 +1151,31 @@ function schoolSteps(school, progNames){
   });
   return {d, t, v: n ? sc / n : 0};
 }
+async function loadVisitReports(){
+  const j=await post({action:'getDataSection',section:'visitReports'});
+  if(!j.ok) return;
+  DATA.__visitReports=j.data||[];
+  renderMyUpcomingSchedules(); renderVisitReportFeed();
+}
+function renderVisitReportFeed(){
+  const box=$('visitReportFeed'); if(!box) return;
+  const all=(DATA.__visitReports||[]).slice().sort((a,b)=>String(b.visitDate||'').localeCompare(String(a.visitDate||'')));
+  const sel=$('visitReportMonth'); if(sel){const keep=sel.value;const months=[...new Set(all.map(r=>String(r.visitDate||'').slice(0,7)).filter(Boolean))];sel.innerHTML='<option value="">All months</option>'+months.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');sel.value=months.includes(keep)?keep:(months[0]||'');}
+  const month=sel?sel.value:''; const rows=all.filter(r=>!month||String(r.visitDate||'').slice(0,7)===month).slice(0,50);
+  box.innerHTML=rows.length?rows.map(r=>`<article class="visit-report-item"><b>${esc(r.school||'School')}</b> <span class="sub">· ${esc(r.visitDate||'')} · ${esc(r.consultant||'')}</span><p>${esc(r.whatWasDone||'')}</p><small class="sub">Participants: ${Number(r.participantCount||0)}${r.issues?` · Issues: ${esc(r.issues)}`:''}</small>${(ME&&ME.role==='admin'||String(r.authorEmail||'').toLowerCase()===String(ME.email||'').toLowerCase())?` <button class="ghost sm" data-vr-edit="${esc(r.scheduleId)}">Edit</button>`:''}</article>`).join(''):'<p class="sub">No visit reports for this month.</p>';
+}
+function openVisitReport(scheduleId){
+  const job=(DATA.__schedules||[]).find(x=>x.id===scheduleId); if(!job)return;
+  const old=(DATA.__visitReports||[]).find(x=>x.scheduleId===scheduleId);
+  if(old && ME.role!=='admin' && String(old.authorEmail||'').toLowerCase()!==String(ME.email||'').toLowerCase()) return alert('Only the report author or Super Admin can edit this report.');
+  let dlg=document.getElementById('visitReportDialog');
+  if(!dlg){dlg=document.createElement('dialog');dlg.id='visitReportDialog';dlg.className='visit-report-dialog';document.body.appendChild(dlg);}
+  dlg.innerHTML=`<form id="visitReportForm"><h2 style="margin:0 0 4px">${old?'Edit visit report':'Submit visit report'}</h2><p class="sub" style="margin:0 0 12px">${esc(job.school)} · ${esc(job.date)} · ${esc(job.consultant)}</p><label for="vrDone">What was done? *</label><textarea id="vrDone" required maxlength="10000" placeholder="Describe the activities completed during this visit…">${esc(old?.whatWasDone||'')}</textarea><label for="vrParticipants">Participant count *</label><input id="vrParticipants" type="number" min="0" step="1" required value="${Number(old?.participantCount||0)}"><label for="vrIssues">Issues (optional)</label><textarea id="vrIssues" maxlength="5000" placeholder="Any challenges or issues…">${esc(old?.issues||'')}</textarea><label for="vrNext">Next action (optional)</label><textarea id="vrNext" maxlength="5000" placeholder="Follow-up actions…">${esc(old?.nextAction||'')}</textarea><div class="visit-report-actions"><button type="button" class="ghost" id="vrCancel">Cancel</button><button type="submit" id="vrSave">${old?'Save changes':'Submit report'}</button></div><p class="sub" id="vrMessage" aria-live="polite"></p></form>`;
+  dlg.showModal();
+  dlg.querySelector('#vrCancel').onclick=()=>dlg.close();
+  dlg.querySelector('#visitReportForm').onsubmit=async e=>{e.preventDefault();const btn=dlg.querySelector('#vrSave'),msg=dlg.querySelector('#vrMessage');btn.disabled=true;btn.textContent='Saving…';const j=await post({action:'saveVisitReport',scheduleId,whatWasDone:dlg.querySelector('#vrDone').value,participantCount:dlg.querySelector('#vrParticipants').value,issues:dlg.querySelector('#vrIssues').value,nextAction:dlg.querySelector('#vrNext').value});btn.disabled=false;btn.textContent=old?'Save changes':'Submit report';if(!j.ok){msg.textContent=j.error||'Could not save report.';return;}dlg.close();await loadVisitReports();};
+}
+
 function renderMyUpcomingSchedules(){
   const box = $("mySchedulesList");
   if (!box || !ME) return;
@@ -1165,13 +1194,13 @@ function renderMyUpcomingSchedules(){
   }
   box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
     (role === "admin" || role === "branch_admin" || role === "cro" ? '<th>Assigned to</th>' : '') +
-    '<th>Status</th></tr></thead><tbody>' + rows.map(b => {
+    '<th>Status</th><th>Visit report</th></tr></thead><tbody>' + rows.map(b => {
       const programsText = (b.programs || []).join(", ") || "–";
       return '<tr><td><b>' + esc(b.date) + '</b></td><td style="white-space:normal;min-width:150px">' + esc(b.school || "–") +
         '</td><td style="white-space:normal;min-width:160px">' + esc(programsText) + '</td><td>' +
         esc([b.shift,b.time].filter(Boolean).join(" · ") || "–") + '</td>' +
         (role === "admin" || role === "branch_admin" || role === "cro" ? '<td>' + esc(b.assigneeName || b.consultant || "–") + '</td>' : '') +
-        '<td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td></tr>';
+        '<td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td><td>' + ((DATA.__visitReports||[]).some(r=>r.scheduleId===b.id) ? '<span class="chip ok">Submitted</span> <button class="ghost sm" data-vr-edit="'+esc(b.id)+'">View / edit</button>' : '<span class="chip pa">Missing</span> <button class="sm" data-vr="'+esc(b.id)+'">Submit</button>') + '</td></tr>';
     }).join("") + '</tbody></table></div>';
 }
 function renderMySchedulePage(){
@@ -1202,13 +1231,13 @@ function renderMySchedulePage(){
     .slice().sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")) || String(a.shift||"").localeCompare(String(b.shift||"")));
   if (!rows.length) { box.innerHTML = '<div class="my-schedules-empty">No booked programs found for this selection.</div>'; return; }
   box.innerHTML = '<div class="my-schedules-scroll"><table><thead><tr><th>Date</th><th>School</th><th>Program</th><th>Shift / time</th>' +
-    (admin || branchScoped ? '<th>Assigned to</th>' : '') + '<th>Branch</th><th>Status</th></tr></thead><tbody>' + rows.map(b =>
+    (admin || branchScoped ? '<th>Assigned to</th>' : '') + '<th>Branch</th><th>Status</th><th>Visit report</th></tr></thead><tbody>' + rows.map(b =>
       '<tr><td><b>' + esc(b.date || "–") + '</b>' + (b.bs ? '<div class="sub">BS: ' + esc(b.bs) + '</div>' : '') + '</td>' +
       '<td style="white-space:normal;min-width:150px">' + esc(b.school || "–") + '</td>' +
       '<td style="white-space:normal;min-width:170px">' + esc((b.programs || []).join(", ") || "–") + '</td>' +
       '<td>' + esc([b.shift,b.time].filter(Boolean).join(" · ") || "–") + '</td>' +
       (admin || branchScoped ? '<td>' + esc(b.assigneeName || b.consultant || "–") + '</td>' : '') +
-      '<td>' + esc(b.branch || "–") + '</td><td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td></tr>'
+      '<td>' + esc(b.branch || "–") + '</td><td><span class="chip ' + (b.status === "Done" ? "ok" : "pa") + '">' + esc(b.status || "Booked") + '</span></td><td>' + ((DATA.__visitReports||[]).some(r=>r.scheduleId===b.id) ? '<span class="chip ok">Submitted</span> <button class="ghost sm" data-vr-edit="'+esc(b.id)+'">View / edit</button>' : '<span class="chip pa">Missing</span> <button class="sm" data-vr="'+esc(b.id)+'">Submit</button>') + '</td></tr>'
     ).join("") + '</tbody></table></div>';
 }
 function renderOverview(st, board){
@@ -1693,6 +1722,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 window.addEventListener("online",()=>{ if(gs) gFlushPoints(); else { try{const q=JSON.parse(localStorage.getItem(G_PEND)||"null");if(q)gSend(q);}catch(e){} } });
 gDestHtml(); gUi();
 
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vr]');if(b){openVisitReport(b.dataset.vr);return;}const ed=e.target.closest('[data-vr-edit]');if(ed)openVisitReport(ed.dataset.vrEdit);});
+$('visitReportMonth')?.addEventListener('change',renderVisitReportFeed);
 $("rf").onclick = load;
 $("sel").onchange = detail;
 if (TOK) load(); else { showLogin(); splashDone(false); }
