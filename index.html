@@ -349,7 +349,7 @@ body.locked .app{display:none}
    <form id="lgf" autocomplete="on">
     <div class="fl"><span>Username or email</span><input id="lg_e" type="text" autocomplete="username" placeholder="Username or email" required></div>
     <div class="fl"><span>Password</span><div class="pw"><input id="lg_p" type="password" autocomplete="current-password" placeholder="Your password" required><button type="button" class="eye" data-eye="lg_p" aria-label="Show password"><svg class="onn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button></div></div>
-    <label class="lg-rem"><input type="checkbox" id="lg_r" checked> Keep me signed in on this device</label>
+    <label class="lg-rem"><input type="checkbox" id="lg_r"> Keep me signed in on this device</label>
     <button type="submit" id="lg_go">Sign in</button>
    </form>
    <a class="lg-link" id="lg_fg" href="#">Forgot password?</a>
@@ -511,14 +511,14 @@ const REFRESH_MS = 60000; // auto-refresh every 60 seconds
 let DATA = {}, chart, programs = [];
 const $ = id => document.getElementById(id);
 let TOK = "", ME = null;
-try { TOK = localStorage.getItem("te_tok") || sessionStorage.getItem("te_tok") || ""; } catch (e) {}
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+try { TOK = sessionStorage.getItem("te_tok") || ""; } catch (e) {}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 // 1 = done, 0.5 = partly, 0 = not started
 function score(v){
   v = String(v || "").trim().toLowerCase();
   if (!v) return 0;
-  if (/not |^no$|pending/.test(v)) return 0;
+  if (/^(?:no|not[- ]?done|pending|not started|incomplete)$/.test(v) || /^(?:not\s|not-)/.test(v)) return 0;
   if (/partial|paratial|process|progress/.test(v)) return .5;
   return 1;
 }
@@ -711,9 +711,12 @@ async function load(){
   const msg = $("msg");
   if (!TOK) return;
   try {
-    const r = await fetch(API_URL + "?tok=" + encodeURIComponent(TOK) + "&t=" + Date.now());
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    DATA = await r.json();
+    const DATA_RESPONSE = await apiPost({action: "getData", tok: TOK, t: Date.now()});
+    if (DATA_RESPONSE && DATA_RESPONSE.error === "auth") { signOut("Your session has ended. Please sign in again."); splashDone(false); return; }
+    if (!DATA_RESPONSE || DATA_RESPONSE.error) throw new Error(DATA_RESPONSE && DATA_RESPONSE.error || "Could not load data");
+    DATA = DATA_RESPONSE;
+    window.__teLoadedVersion = DATA.__dataVersion || 0;
+    window.__teLoadedModified = DATA.__sheetModified || 0;
     if (DATA.__auth === false) { signOut("Your session has ended. Please sign in again."); splashDone(false); return; }
     ME = DATA.__user || ME; meUi(); gBanner();
     build(); render();
@@ -872,20 +875,24 @@ async function post(payload){
   return j;
 }
 async function saveRow(tr){
+  if (!tr || tr.dataset.saving === "1") return;
+  tr.dataset.saving = "1";
+  const saveButton = tr.querySelector(".sv"); if (saveButton) { saveButton.disabled = true; saveButton.textContent = "Saving…"; }
   const q = c => tr.querySelector(c).value.trim();
   const row = {id: tr.dataset.id || "", school: curSchool, program: q(".tp"), discussion: q(".tdi"), open: q(".to"), close: q(".tc")};
-  if (!row.program) return tmsg("Please enter the program name.", false);
-  if (row.open && row.close && row.close < row.open) return tmsg("Closing date cannot be before the opening date.", false);
+  if (!row.program) { tr.dataset.saving = "0"; if (saveButton) { saveButton.disabled = false; saveButton.textContent = "Save"; } return tmsg("Please enter the program name.", false); }
+  if (row.open && row.close && row.close < row.open) { tr.dataset.saving = "0"; if (saveButton) { saveButton.disabled = false; saveButton.textContent = "Save"; } return tmsg("Closing date cannot be before the opening date.", false); }
   if (ME && ME.role === "cro" && !row.id) {
     const f = tr.querySelector(".mom-front")?.files?.[0], b = tr.querySelector(".mom-back")?.files?.[0];
-    if (!f || !b) return tmsg("Both MOM front and back photos are compulsory.", false);
+    if (!f || !b) { tr.dataset.saving = "0"; if (saveButton) { saveButton.disabled = false; saveButton.textContent = "Save"; } return tmsg("Both MOM front and back photos are compulsory.", false); }
     try { row.momFront = await fileToDataUrl(f); row.momBack = await fileToDataUrl(b); }
-    catch (e) { return tmsg("Could not read MOM photos. Please select them again.", false); }
+    catch (e) { tr.dataset.saving = "0"; if (saveButton) { saveButton.disabled = false; saveButton.textContent = "Save"; } return tmsg("Could not read MOM photos. Please select them again.", false); }
   }
   tmsg("Saving…", true);
-  const j = await post({action: "save", row});
-  if (!j.ok) return tmsg(j.error || "Save failed", false);
-  row.id = j.id; tr.dataset.id = j.id; tr.dataset.new = "0"; tr.classList.remove("dirty");
+  if (!tr.dataset.requestId) tr.dataset.requestId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ("req-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+  const j = await post({action: "save", row, requestId: tr.dataset.requestId});
+  if (!j.ok) { tr.dataset.saving = "0"; if (saveButton) { saveButton.disabled = false; saveButton.textContent = "Save"; } return tmsg(j.error || "Save failed", false); }
+  row.id = j.id; tr.dataset.id = j.id; tr.dataset.new = "0"; tr.dataset.requestId = ""; tr.dataset.saving = "0"; tr.classList.remove("dirty");
   const arr = DATA.__targets = DATA.__targets || [], i = arr.findIndex(x => x.id === row.id);
   if (i >= 0) arr[i] = row; else arr.push(row);
   tmsg("Saved ✓", true); targetView();
@@ -1031,8 +1038,6 @@ function openBook(date){
     <div class="acts"><button id="f_save">Book schedule</button><button class="ghost" id="f_cancel">Cancel</button></div>`;
   $("bkf").dataset.date = date;
   msSet("f_ag", [[null, programs.map(p => p.name)]]); refreshSubs(); msSet("f_pa", [[null, PARTICIPANTS]]);
-  const c = $("cc").value; if (c && [...$("f_cons").options].some(o => o.value === c)) $("f_cons").value = c;
-  if (ME && ME.role === "consultant") $("f_cons").value = ME.name;
   $("bk").showModal();
 }
 function bkConflict(b, all){
@@ -1299,7 +1304,7 @@ $("lgf").onsubmit = async e => {
   $("lg_go").disabled = false;
   if (!j.ok) return lgMsg(j.error || "Could not sign in.");
   TOK = j.token; ME = j.user;
-  try { ($("lg_r").checked ? localStorage : sessionStorage).setItem("te_tok", TOK); } catch (x) {}
+  try { sessionStorage.removeItem("te_tok"); localStorage.removeItem("te_tok"); ($("lg_r").checked ? localStorage : sessionStorage).setItem("te_tok", TOK); } catch (x) {}
   $("lg_p").value = ""; $("login").classList.add("hide"); document.body.classList.remove("locked"); lgMsg(""); meUi(); show("ov"); load();
 };
 $("lg_fg").onclick = e => { e.preventDefault(); $("lg_fe").value = $("lg_e").value; lgView("f1"); };
@@ -1337,6 +1342,10 @@ $("pw_save").onclick = async () => {
   m("Saving…", true);
   const j = await post({action: "changePassword", old: $("pw_o").value, password: n1});
   if (!j.ok) return m(j.error || "Could not change the password.");
+  if (j.token) {
+    TOK = j.token;
+    try { (localStorage.getItem("te_tok") ? localStorage : sessionStorage).setItem("te_tok", TOK); } catch (e) {}
+  }
   m("Password changed ✓", true); setTimeout(() => $("pwd").close(), 900);
 };
 async function loadUsers(){
@@ -1727,7 +1736,22 @@ $('visitReportMonth')?.addEventListener('change',renderVisitReportFeed);
 $("rf").onclick = load;
 $("sel").onchange = detail;
 if (TOK) load(); else { showLogin(); splashDone(false); }
-setInterval(load, REFRESH_MS);
+let __teRefreshBusy = false;
+async function checkForDashboardChanges(){
+  if (!TOK || __teRefreshBusy || document.visibilityState !== "visible") return;
+  __teRefreshBusy = true;
+  try {
+    const v = await post({action:"getDataVersion"});
+    if (v && v.ok && (Number(v.version || 0) !== Number(window.__teLoadedVersion || 0) || Number(v.modified || 0) > Number(window.__teLoadedModified || 0))) {
+      window.__teLoadedModified = Number(v.modified || 0);
+      await load();
+    }
+  } catch (e) { /* keep current dashboard visible during transient network failures */ }
+  finally { __teRefreshBusy = false; }
+}
+setInterval(checkForDashboardChanges, REFRESH_MS);
+window.addEventListener("error", function(){ const m=$("msg"); if(m && TOK){m.style.display="block";m.textContent="A page error occurred. Your saved data is safe; refresh the page or sign in again if the problem continues.";} });
+window.addEventListener("unhandledrejection", function(){ const m=$("msg"); if(m && TOK){m.style.display="block";m.textContent="A request could not be completed. Check your connection and try again.";} });
 </script>
 </body>
 </html>
