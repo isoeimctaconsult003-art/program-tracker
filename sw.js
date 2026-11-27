@@ -1,5 +1,5 @@
-const CACHE_NAME = "third-eye-shell-v6";
-const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./redesign.css?v=6", "./redesign.js"];
+const CACHE_NAME = "third-eye-shell-v7";
+const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./redesign.css?v=7", "./redesign.js"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
