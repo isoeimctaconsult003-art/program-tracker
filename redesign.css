@@ -315,3 +315,15 @@ body input:focus,body select:focus,body textarea:focus{outline:2px solid rgba(15
     padding: 2px 0 12px !important;
   }
 }
+
+
+/* Keep the redesigned EIMCTA splash only; disable the older duplicate splash */
+html body #splash { display: none !important; }
+#eimctaSplash .splashProduct {
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: .18em;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
