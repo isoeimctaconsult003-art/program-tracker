@@ -83,3 +83,48 @@ dialog[open]{position:fixed;inset:auto 0 0 0;margin:0;width:100%!important;max-w
 body.drawer-open{overflow:hidden}
 @media(min-width:900px){#featureDrawer{width:360px}}
 @media(prefers-reduced-motion:reduce){#featureDrawer,#featureShade{transition:none}}
+
+/* EIMCTA professional visual system */
+:root{--bg:#f5f6fa;--mar:#26215c;--pa:#ee8f6e;--bd:#e7e8ef;--mu:#777b91;--tx:#20213a;--ok:#9a79df;--sh:0 8px 26px rgba(31,33,72,.055)}
+html body{background:#f5f6fa;color:#20213a;font-family:Inter,"Segoe UI",system-ui,sans-serif;letter-spacing:-.01em}
+body .app{max-width:1280px;margin:0 auto;padding:0 24px 44px}
+body section,body .card{background:#fff;border:1px solid #e9eaf0;border-radius:16px;box-shadow:0 4px 18px rgba(31,33,72,.045);padding:20px;margin-bottom:16px}
+body h1,body h2,body h3{color:#26215c;letter-spacing:-.025em}
+body h2{font-size:16px;font-weight:700}
+body .topbar{padding:12px 0 14px;background:rgba(245,246,250,.94);border-bottom:1px solid #e8e9f0}
+#featureMenuBtn{width:42px;height:42px;border-radius:12px;background:#fff;border:1px solid #e3e4ec;color:#26215c;box-shadow:0 2px 8px rgba(31,33,72,.05)}
+#featureMenuBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#featureShade{background:rgba(17,19,42,.42);backdrop-filter:blur(3px)}
+#featureDrawer{width:min(372px,90vw);background:#fff;border:0;border-left:1px solid #e9eaf0;box-shadow:-20px 0 55px rgba(20,22,55,.2);padding:calc(18px + env(safe-area-inset-top)) 18px calc(16px + env(safe-area-inset-bottom))}
+.drawerHead{padding:4px 2px 18px;border-bottom:1px solid #ececf2}
+.drawerBrand{display:flex;align-items:center;gap:12px;min-width:0}
+.drawerBrand img{width:44px;height:44px;object-fit:contain;border-radius:11px;background:#fff;border:1px solid #ececf2;padding:3px}
+.drawerHead b{font-size:17px;font-weight:750;letter-spacing:-.03em;color:#26215c}
+.drawerHead small{font-size:10px;letter-spacing:.04em;color:#85879a;margin-top:3px}
+#drawerClose{width:34px;height:34px;border:1px solid #e8e9ef;background:#f8f8fb;color:#67697c;border-radius:10px;font-size:22px}
+.drawerUser{margin:14px 0 8px;padding:12px 13px;border:1px solid #ececf3;border-radius:12px;background:#f8f8fc;color:#565873;font-size:12px;font-weight:600}
+.drawerGroup{padding:18px 10px 7px;color:#9a9bad;font-size:9px;font-weight:800;letter-spacing:.14em}
+.drawerLink{min-height:44px;padding:7px 10px;gap:11px;margin:2px 0;border-radius:10px;color:#3c3d55;font-size:12.5px;font-weight:550;transition:background .16s,color .16s}
+.drawerLink:hover,.drawerLink:focus-visible{background:#f2f1fa;color:#26215c}
+.drawerIcon{width:29px;height:29px;border-radius:9px;background:#f1f0f8;color:#6555a4;font-size:15px}
+.drawerFoot{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a0a1b0;padding:14px 8px 2px}
+#stats .pill{border:1px solid #e9eaf0;border-radius:14px;box-shadow:0 3px 12px rgba(31,33,72,.035)}
+#stats .pill b{color:#26215c}
+body button{border-radius:10px;font-weight:600}
+body input,body select,body textarea{border-color:#e1e2ea!important}
+body input:focus,body select:focus,body textarea:focus{outline:2px solid rgba(154,121,223,.22)!important;border-color:#9a79df!important}
+#eimctaSplash{position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 50% 42%,#393477 0%,#26215c 48%,#19163f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;overflow:hidden;opacity:1;transition:opacity .65s ease,visibility .65s ease}
+#eimctaSplash.splashOut{opacity:0;visibility:hidden;pointer-events:none}
+.splashAura{position:absolute;width:270px;height:270px;border-radius:50%;background:rgba(154,121,223,.15);filter:blur(28px);animation:auraPulse 2.4s ease-in-out infinite}
+.splashMark{position:relative;width:116px;height:116px;border-radius:26px;background:#fff;display:grid;place-items:center;padding:10px;box-shadow:0 14px 48px rgba(0,0,0,.2);animation:logoReveal .9s cubic-bezier(.2,.8,.2,1) both}
+.splashMark img{width:100%;height:100%;object-fit:contain}
+.splashName{position:relative;margin-top:24px;font-size:25px;font-weight:800;letter-spacing:.22em;padding-left:.22em}
+.splashProduct{position:relative;margin-top:8px;color:rgba(255,255,255,.72);font-size:9px;font-weight:700;letter-spacing:.2em}
+.splashProduct span{color:#ee8f6e;padding:0 5px}
+.splashLine{position:relative;width:112px;height:2px;margin-top:30px;background:rgba(255,255,255,.16);overflow:hidden;border-radius:4px}
+.splashLine i{display:block;width:42%;height:100%;background:#ee8f6e;border-radius:4px;animation:loadLine 1.25s ease-in-out infinite}
+@keyframes logoReveal{0%{opacity:0;transform:translateY(18px) scale(.82) rotate(-5deg)}70%{opacity:1;transform:translateY(-2px) scale(1.03) rotate(1deg)}100%{opacity:1;transform:none}}
+@keyframes auraPulse{0%,100%{transform:scale(.85);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+@keyframes loadLine{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
+@media(max-width:640px){body .app{padding:0 13px 100px}body section,body .card{padding:15px;border-radius:14px}}
+@media(prefers-reduced-motion:reduce){#eimctaSplash,.splashMark,.splashAura,.splashLine i{animation:none!important;transition:none!important}}
