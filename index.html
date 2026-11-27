@@ -907,6 +907,7 @@ function showNextNotification(){
  dlg.dataset.notificationId=n.id;
  dlg.showModal();
 }
+$('notificationPopup').addEventListener('cancel',e=>e.preventDefault());
 $('notificationPopupAck').onclick=async()=>{
  const dlg=$('notificationPopup'),id=dlg.dataset.notificationId;
  const b=$('notificationPopupAck');b.disabled=true;
