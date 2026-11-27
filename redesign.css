@@ -128,3 +128,36 @@ body input:focus,body select:focus,body textarea:focus{outline:2px solid rgba(15
 @keyframes loadLine{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
 @media(max-width:640px){body .app{padding:0 13px 100px}body section,body .card{padding:15px;border-radius:14px}}
 @media(prefers-reduced-motion:reduce){#eimctaSplash,.splashMark,.splashAura,.splashLine i{animation:none!important;transition:none!important}}
+
+/* FIX: Mobile feature drawer navigation */
+#featureDrawer #drawerLinks {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  flex: 1 1 auto !important;
+  width: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  gap: 2px;
+}
+
+#featureDrawer #drawerLinks .drawerGroup {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+#featureDrawer #drawerLinks .drawerLink {
+  display: flex;
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+#featureDrawer #drawerLinks .drawerLink > span:last-child {
+  flex: 1;
+  text-align: left;
+}
