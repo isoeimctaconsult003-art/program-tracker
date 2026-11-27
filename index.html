@@ -539,7 +539,9 @@ const REFRESH_MS = 60000; // auto-refresh every 60 seconds
 let DATA = {}, chart, programs = [];
 const $ = id => document.getElementById(id);
 let TOK = "", ME = null;
+// Restore the remembered login in an installed PWA as well as a browser tab.
 try { TOK = sessionStorage.getItem("te_tok") || ""; } catch (e) {}
+if (!TOK) { try { TOK = localStorage.getItem("te_tok") || ""; } catch (e) {} }
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 // 1 = done, 0.5 = partly, 0 = not started
