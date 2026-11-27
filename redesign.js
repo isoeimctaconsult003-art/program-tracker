@@ -2,7 +2,7 @@
 (function () {
   // EIMCTA branded startup animation. Uses the company logo asset, never an eye illustration.
   const splash = document.createElement("div"); splash.id = "eimctaSplash";
-  splash.innerHTML = '<div class="splashAura"></div><div class="splashMark"><img src="./logo.jpg" alt="EIMCTA company logo"></div><div class="splashName">EIMCTA</div><div class="splashProduct">THIRD EYE <span>·</span> OPERATIONS PLATFORM</div><div class="splashLine"><i></i></div>';
+  splash.innerHTML = '<div class="splashAura"></div><div class="splashMark"><img src="./logo.jpg" alt="EIMCTA company logo"></div><div class="splashName">EIMCTA</div><div class="splashProduct">OPERATIONS PLATFORM</div><div class="splashLine"><i></i></div>';
   document.body.appendChild(splash);
   const dismissSplash = () => { splash.classList.add("splashOut"); setTimeout(() => splash.remove(), 700); };
   window.addEventListener("load", () => setTimeout(dismissSplash, 1450), {once:true});
