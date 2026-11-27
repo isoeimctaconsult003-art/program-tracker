@@ -266,3 +266,52 @@ body input:focus,body select:focus,body textarea:focus{outline:2px solid rgba(15
   transform: none !important;
   text-align: left !important;
 }
+
+
+/* ROOT CAUSE FIX: mobile global aside rule was affecting feature drawer */
+@media (max-width: 900px) {
+  html body #featureDrawer {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: min(372px, 90vw) !important;
+    max-width: 90vw !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: calc(18px + env(safe-area-inset-top)) 18px calc(16px + env(safe-area-inset-bottom)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    transform: translateX(105%);
+  }
+  html body #featureDrawer.open {
+    transform: translateX(0) !important;
+  }
+  html body #featureDrawer > .drawerHead,
+  html body #featureDrawer > .drawerUser,
+  html body #featureDrawer > nav#drawerLinks,
+  html body #featureDrawer > .drawerFoot {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    flex-shrink: 0;
+    box-sizing: border-box !important;
+  }
+  html body #featureDrawer > nav#drawerLinks {
+    display: block !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    padding: 2px 0 12px !important;
+  }
+}
