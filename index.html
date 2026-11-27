@@ -508,7 +508,7 @@ body.locked .app{display:none}
   </div>
   <section><h2>Planned vs actual visits</h2><div id="toolPlanned" class="scroll"></div></section>
   <div class="g2">
-    <section><h2>Notifications inbox <button class="ghost sm" id="toolRefreshNotifications">Refresh</button></h2><div id="toolNotifications" class="sub">Loading…</div></section>
+    <section><h2>Notifications inbox <button class="ghost sm" id="toolRefreshNotifications">Refresh</button></h2><div id="toolAnnouncementComposer" style="display:none;border:1px solid var(--bd);border-radius:14px;padding:14px;margin:0 0 14px;background:rgba(255,255,255,.7)"><h3 style="margin:0 0 8px">Send announcement to everyone</h3><input id="announcementTitle" maxlength="120" placeholder="Announcement title" style="width:100%;min-width:0;margin:0 0 8px"><textarea id="announcementBody" maxlength="2000" rows="3" placeholder="Write your message…" style="width:100%;min-width:0;border:1px solid var(--bd);border-radius:12px;padding:10px;font:inherit;resize:vertical"></textarea><div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap"><button id="sendAnnouncement" style="margin:0">Send to all active staff</button><span id="announcementMsg" class="sub" aria-live="polite"></span></div></div><div id="toolNotifications" class="sub">Loading…</div></section>
     <section><h2>Monthly reports</h2><p class="sub">Export the currently permitted schedule, visit-report and travel data for a selected month.</p><input id="toolMonth" type="month" style="width:100%;min-width:0"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="toolCsv">Export CSV</button><button class="ghost" id="toolXlsx">Export Excel</button><button class="ghost" id="toolPrint">Print / save PDF</button></div></section>
   </div>
   <section><h2>Travel cost claims</h2><p class="sub">Select your unclaimed completed trips. Administrators can review claims below.</p><div id="toolClaims"></div></section>
@@ -524,7 +524,7 @@ body.locked .app{display:none}
   <div class="fl"><span>Repeat the new password</span><div class="pw"><input id="pw_n2" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye="pw_n2" aria-label="Show password"><svg class="onn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.9 19.9 0 0 1-3.17 4.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg></button></div></div>
   <div id="pw_msg" class="sub" style="font-weight:600"></div>
   <div class="acts"><button id="pw_save">Save</button><button class="ghost" id="pw_cancel">Cancel</button></div></div></dialog>
-<dialog id="bk"><div id="bkf"></div></dialog>
+<dialog id="notificationPopup" style="width:min(520px,92vw);padding:0;border:0;border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35)"><div style="padding:22px;background:#fff"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:38px;height:38px;border-radius:12px;background:#eeeafb;color:#26215c;display:grid;place-items:center;font-size:19px">🔔</span><div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7b789a">Third Eye notification</div><h3 id="notificationPopupTitle" style="margin:2px 0 0;color:#26215c;font-size:18px"></h3></div></div><p id="notificationPopupBody" style="white-space:pre-wrap;margin:12px 0 18px;color:#38354f;line-height:1.65"></p><div style="display:flex;justify-content:flex-end"><button id="notificationPopupAck" style="margin:0">Acknowledge</button></div></div></dialog><dialog id="bk"><div id="bkf"></div></dialog>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -747,6 +747,7 @@ async function load(){
     ME = DATA.__user || ME; meUi(); gBanner();
     build(); render();
     loadVisitReports();
+    pollNotifications();
     msg.style.display = "none";
     splashDone(true);
     $("upd").textContent = "Updated " + new Date().toLocaleTimeString() + " · refreshes every minute";
@@ -861,6 +862,7 @@ function renderTools(){
  $('toolBranches').innerHTML='<table><tr><th>Branch</th><th>Planned</th><th>Done</th><th>Reports</th><th>GPS verified</th></tr>'+Object.entries(branches).map(([b,g])=>`<tr><td>${b}</td><td>${g.planned}</td><td>${g.done}</td><td>${g.reports}</td><td>${g.gps}</td></tr>`).join('')+'</table><p class="tool-muted">GPS counts include only confirmed school visits.</p>';
  const matchedGps=schedules.filter(x=>verifiedVisits.some(v=>String(v.schoolName||'').trim().toLowerCase()===String(x.school||'').trim().toLowerCase() && String(v.date||'')===String(x.date||''))).length;
  $('toolPlanned').innerHTML=`<table><tr><th>Measure</th><th>Count</th></tr><tr><td>Scheduled visits</td><td>${schedules.length}</td></tr><tr><td>Marked done</td><td>${schedules.filter(x=>x.status==='Done').length}</td></tr><tr><td>Visit reports submitted</td><td>${reports.length}</td></tr><tr><td>Confirmed GPS school visits</td><td>${verifiedVisits.length}</td></tr><tr><td>GPS visits matching scheduled school and date</td><td>${matchedGps}</td></tr><tr><td>Overdue without report</td><td>${missing.length}</td></tr></table>`;
+ $('toolAnnouncementComposer').style.display=ME?.role==='admin'?'':'none';
  $('toolNotifications').innerHTML=TOOL_NOTIFICATIONS.length?TOOL_NOTIFICATIONS.slice(0,60).map(n=>`<div class="tool-alert"><b>${esc(n.title)}</b><div>${esc(n.body)}</div><small class="tool-muted">${toolDate(n.createdAt)} · ${n.readAt?'Read':'Unread'}</small>${!n.readAt?` <button class="ghost sm" data-notify-read="${esc(n.id)}">Mark read</button>`:''}</div>`).join(''):'<p>No notifications.</p>';
  const admin=['admin','branch_admin'].includes(ME?.role);
  const tripIds=new Set(TOOL_CLAIMS.filter(r=>['Pending','Approved','Paid'].includes(r[9])).flatMap(r=>String(r[5]||'').split(',')));
@@ -874,10 +876,49 @@ function renderTools(){
 $('toolSearch').oninput=()=>{const q=$('toolSearch').value.trim().toLowerCase();if(!q){$('toolSearchResults').textContent='Type to search your permitted records.';return;}const out=[];programs.forEach(p=>p.schools.forEach(x=>{if((x.name+' '+x.consultant+' '+p.name).toLowerCase().includes(q))out.push({type:'School / program',title:x.name,detail:p.name+' · '+x.consultant});}));toolScheduleRows().forEach(x=>{if([x.school,x.consultant,x.assigneeName,x.date,(x.programs||[]).join(' ')].join(' ').toLowerCase().includes(q))out.push({type:'Schedule',title:x.school,detail:x.date+' · '+(x.assigneeName||x.consultant)});});(DATA.__visitReports||[]).forEach(x=>{if([x.school,x.consultant,x.whatWasDone,x.issues].join(' ').toLowerCase().includes(q))out.push({type:'Visit report',title:x.school,detail:x.visitDate+' · '+x.consultant});});(DATA.__targets||[]).forEach(x=>{if([x.school,x.program,x.consultant,x.discussion].join(' ').toLowerCase().includes(q))out.push({type:'Target date',title:x.school,detail:x.program+' · '+x.close});});$('toolSearchResults').innerHTML=out.slice(0,50).map(x=>`<div class="tool-alert"><b>${esc(x.title)}</b> <span class="tool-muted">${esc(x.type)}</span><div>${esc(x.detail)}</div></div>`).join('')||'No matching records.';};
 $('tools').addEventListener('click',async e=>{
  const nr=e.target.closest('[data-notify-read]');if(nr){const j=await post({action:'markNotificationRead',id:nr.dataset.notifyRead});if(!j.ok)return alert(j.error||'Could not mark read.');await loadToolsData();return;}
+ const send=e.target.closest('#sendAnnouncement');if(send){const title=$('announcementTitle').value.trim(),body=$('announcementBody').value.trim(),msg=$('announcementMsg');if(!title||!body){msg.textContent='Enter both a title and a message.';return;}send.disabled=true;msg.textContent='Sending…';const j=await post({action:'sendAnnouncement',title,body});send.disabled=false;if(!j.ok){msg.textContent=j.error||'Could not send the announcement.';return;}msg.textContent='Sent to '+j.recipients+' active staff member(s).';$('announcementTitle').value='';$('announcementBody').value='';await loadToolsData();return;}
  const sub=e.target.closest('#toolSubmitClaim');if(sub){const tripIds=[...$('toolClaims').querySelectorAll('[data-claim-trip]:checked')].map(x=>x.dataset.claimTrip);const j=await post({action:'submitCostClaim',tripIds,month:$('toolMonth').value||new Date().toISOString().slice(0,7)});if(!j.ok)return alert(j.error||'Could not submit claim.');alert('Travel claim submitted.');await loadToolsData();return;}
  const rev=e.target.closest('[data-claim-review]');if(rev){const reason=rev.dataset.claimStatus==='Rejected'?prompt('Reason for rejection (optional):')||'':'';const j=await post({action:'reviewCostClaim',id:rev.dataset.claimReview,status:rev.dataset.claimStatus,reason});if(!j.ok)return alert(j.error||'Could not update claim.');await loadToolsData();return;}
 });
 $('toolRefreshNotifications').onclick=loadToolsData;
+
+let notificationPopupQueue=[], notificationPopupBusy=false, notificationPollBusy=false;
+async function pollNotifications(){
+ if(!TOK||notificationPollBusy||document.visibilityState==='hidden')return;
+ notificationPollBusy=true;
+ try{
+  const j=await post({action:'getDataSection',section:'notifications'});
+  if(!j.ok)return;
+  TOOL_NOTIFICATIONS=j.data||[];
+  const cutoff=Date.now()-7*86400000;
+  notificationPopupQueue=TOOL_NOTIFICATIONS.filter(n=>!n.readAt&&new Date(n.createdAt).getTime()>=cutoff)
+   .sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+  if(!notificationPopupBusy&&notificationPopupQueue.length)showNextNotification();
+  if($('tools')?.classList.contains('active'))renderTools();
+ }catch(e){}finally{notificationPollBusy=false;}
+}
+function showNextNotification(){
+ if(notificationPopupBusy||!notificationPopupQueue.length)return;
+ const n=notificationPopupQueue[0],dlg=$('notificationPopup');
+ if(!dlg||dlg.open)return;
+ notificationPopupBusy=true;
+ $('notificationPopupTitle').textContent=n.title||'New notification';
+ $('notificationPopupBody').textContent=n.body||'You have a new notification.';
+ dlg.dataset.notificationId=n.id;
+ dlg.showModal();
+}
+$('notificationPopupAck').onclick=async()=>{
+ const dlg=$('notificationPopup'),id=dlg.dataset.notificationId;
+ const b=$('notificationPopupAck');b.disabled=true;
+ const j=await post({action:'markNotificationRead',id});
+ b.disabled=false;
+ if(!j.ok){alert(j.error||'Could not acknowledge this notification.');return;}
+ dlg.close();notificationPopupBusy=false;notificationPopupQueue=notificationPopupQueue.filter(n=>n.id!==id);
+ await pollNotifications();
+};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pollNotifications();});
+
+setInterval(()=>{if(TOK&&document.visibilityState==='visible')pollNotifications();},45000);
 $('toolCsv').onclick=()=>{const month=$('toolMonth').value;const rows=[['Type','Date','School','Staff','Status','Details']];toolScheduleRows().filter(x=>!month||String(x.date).slice(0,7)===month).forEach(x=>rows.push(['Schedule',x.date,x.school,x.assigneeName||x.consultant,x.status,(x.programs||[]).join('; ')]));(DATA.__visitReports||[]).filter(x=>!month||String(x.visitDate).slice(0,7)===month).forEach(x=>rows.push(['Visit report',x.visitDate,x.school,x.consultant,'Submitted',x.whatWasDone]));(DATA.__tracks||[]).filter(x=>!month||String(x.date).slice(0,7)===month).forEach(x=>rows.push(['GPS trip',x.date,'',x.name,'Recorded',`${x.km} km; ${x.mode||''}; fare ${x.fare||0}`]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='third-eye-monthly-'+(month||'all')+'.csv';a.click();URL.revokeObjectURL(a.href);};
 async function toolReportRows(){const month=$('toolMonth').value;const rows=[['Type','Date','School','Staff','Status','Details']];toolScheduleRows().filter(x=>!month||String(x.date).slice(0,7)===month).forEach(x=>rows.push(['Schedule',x.date,x.school,x.assigneeName||x.consultant,x.status,(x.programs||[]).join('; ')]));(DATA.__visitReports||[]).filter(x=>!month||String(x.visitDate).slice(0,7)===month).forEach(x=>rows.push(['Visit report',x.visitDate,x.school,x.consultant,'Submitted',x.whatWasDone]));(DATA.__tracks||[]).filter(x=>!month||String(x.date).slice(0,7)===month).forEach(x=>rows.push(['GPS trip',x.date,'',x.name,'Recorded',`${x.km} km; ${x.mode||''}; fare ${x.fare||0}`]));return rows;}
 $('toolXlsx').onclick=async()=>{const rows=await toolReportRows();try{if(!window.XLSX){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc);});}const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Monthly Report');XLSX.writeFile(wb,'third-eye-monthly-'+($('toolMonth').value||'all')+'.xlsx');}catch(err){alert('Excel export library could not load. Use Export CSV instead.');}};
