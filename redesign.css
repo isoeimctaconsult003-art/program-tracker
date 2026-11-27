@@ -1,0 +1,65 @@
+/* Third Eye mobile redesign. Load AFTER the inline <style>. No element IDs changed. */
+:root{--bg:#eef0fc;--mar:#5b5fe0;--pa:#f09a7b;--bd:#e6e8f7;--mu:#8a8cab;--tx:#1d1f3d;--ok:#8b7ff0;--sh:0 8px 24px rgba(91,95,224,.09)}
+html body{background:linear-gradient(160deg,#f2f4fe,#e9ecfb 60%,#f5effb) fixed;font-family:Poppins,Inter,system-ui,sans-serif;font-size:14px;color:var(--tx)}
+body .app{display:block;max-width:600px;margin:0 auto;padding:0 16px 120px;background:none;border:0;box-shadow:none;backdrop-filter:none;border-radius:0}
+.hx{display:none!important}
+/* header */
+body .topbar{position:sticky;top:0;z-index:40;margin:0 -16px 6px;border-radius:0;border:0;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(242,244,254,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);justify-content:space-between}
+.topbar nav,.topbar .live{display:none!important}
+.brand img{height:34px;border-radius:10px}.brand .ttl{font-size:14px}
+.hdr{display:flex;gap:8px}
+.iconbtn{position:relative;width:40px;height:40px;min-height:0;padding:0;margin:0;border-radius:14px;background:#fff;color:var(--mar);border:1px solid var(--bd);display:grid;place-items:center}
+.iconbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#bellN{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--pa);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+body .top{padding:6px 0 10px}body .top h1{font-size:24px;color:var(--tx)}.acts2{display:none!important}
+/* segment bar */
+#segbar{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:2px 16px 6px;scrollbar-width:none}
+#segbar::-webkit-scrollbar{display:none}
+#segbar button{flex:none;margin:0;min-height:38px;padding:8px 16px;font-size:13px;border-radius:999px;background:#fff;color:#5a5d86;border:1px solid var(--bd)}
+#segbar button.on{background:var(--mar);color:#fff;border-color:var(--mar)}
+/* bottom nav */
+#bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(560px,calc(100% - 24px));height:68px;background:rgba(255,255,255,.97);border:1px solid #fff;border-radius:26px;box-shadow:0 12px 34px rgba(60,64,170,.2);display:flex;align-items:center;z-index:60}
+#bnav button{flex:1;margin:0;min-height:0;padding:6px 0;background:none;border:0;border-radius:18px;color:#9a9cc0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px}
+#bnav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#bnav button.on{color:var(--mar);font-weight:600}
+#bnav button.mid{flex:0 0 66px;height:66px;margin-top:-28px;border-radius:50%;background:var(--mar);color:#fff;box-shadow:0 10px 22px rgba(91,95,224,.45);border:4px solid #f2f4fe}
+#bnav button.mid.on{color:#fff}
+#fab{position:fixed;right:18px;bottom:calc(98px + env(safe-area-inset-bottom));width:54px;height:54px;min-height:0;padding:0;margin:0;border-radius:50%;font-size:28px;line-height:1;background:var(--pa);border:0;color:#fff;box-shadow:0 10px 22px rgba(240,154,123,.5);z-index:55}
+body.locked #bnav,body.locked #fab{display:none}
+/* cards and layout */
+body section,body .card{background:#fff;border:1px solid var(--bd);border-radius:22px;box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+.ovrow1,.ovrow2,.g2,.trgrid{display:grid;grid-template-columns:1fr!important;gap:14px}
+.ovrow1 section,.ovrow2 section,.g2 section{margin:0}
+.hd h2,body h2{font-size:15px}
+.list{max-height:none}
+#stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#stats .pill{display:flex;flex-direction:column;gap:2px;border-radius:18px;background:#fff;border:1px solid var(--bd);padding:12px 14px;box-shadow:var(--sh);font-size:12px}
+#stats .pill b{font-size:22px;color:var(--mar)}
+#stats .pill.soft{grid-column:1/-1;background:rgba(139,127,240,.13);box-shadow:none}
+.fcards{display:flex;overflow-x:auto;gap:12px;scroll-snap-type:x mandatory;margin:0 -4px;padding:0 4px 4px}
+.fc{flex:0 0 78%;scroll-snap-align:start;min-height:190px}
+.rcv{width:150px;height:150px}.rleg b{font-size:22px}.trk{height:180px}
+/* tables become cards */
+table.cardify,table.cardify tbody{display:block;min-width:0!important;width:100%}
+table.cardify tr{display:block;background:#fff;border:1px solid var(--bd);border-radius:16px;padding:8px 12px;margin:0 0 10px}
+table.cardify tr:has(th){display:none}
+table.cardify td{display:flex;justify-content:space-between;align-items:center;gap:12px;white-space:normal!important;border:0!important;padding:5px 0!important;background:none!important;text-align:right;min-width:0!important}
+table.cardify td::before{content:attr(data-l);flex:none;max-width:42%;text-align:left;color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+table.cardify td:empty{display:none}
+.scroll:has(table.cardify),.my-schedules-scroll{border:0;max-height:none;background:none;overflow:visible}
+#sbwrap{max-height:380px;overflow-y:auto}
+/* forms */
+body select,body input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),body textarea{min-width:0!important;width:100%;max-width:100%;min-height:44px;font-size:16px;border-radius:14px}
+body button{min-height:40px}
+/* travel */
+#gps .trgrid{display:flex;flex-direction:column}#gps .trr{order:-1}#gmap{height:300px;border-radius:20px}
+.tbtns button{min-height:56px;font-size:16px;font-weight:600;border-radius:18px}
+#g_end{background:var(--pa);border-color:var(--pa);color:#fff}
+#gps>h2{display:none}
+#tools>.ph,#tools>p.sub{display:none}#tools .g2:not(:has(section:not(.hx))){display:none}
+#hubAcct .me{display:flex;flex-wrap:wrap;gap:8px}#hubAcct .me span{flex:1 1 100%;max-width:none}
+/* bottom sheets */
+dialog[open]{position:fixed;inset:auto 0 0 0;margin:0;width:100%!important;max-width:100%!important;max-height:92vh;border-radius:26px 26px 0 0!important;animation:sheet .25s ease}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){dialog[open]{animation:none}}
+@media print{#bnav,#fab,#segbar,.hdr{display:none}}
