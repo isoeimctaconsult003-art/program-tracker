@@ -201,3 +201,68 @@ body input:focus,body select:focus,body textarea:focus{outline:2px solid rgba(15
   flex: 1 1 auto !important;
   text-align: left !important;
 }
+
+
+/* MOBILE DRAWER ALIGNMENT FIX v7 */
+#featureDrawer,
+#featureDrawer * {
+  box-sizing: border-box !important;
+}
+#featureDrawer {
+  width: min(372px, 90vw) !important;
+  max-width: 90vw !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+#featureDrawer nav#drawerLinks {
+  display: block !important;
+  width: 100% !important;
+  padding: 2px 0 12px !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+#featureDrawer nav#drawerLinks > .drawerGroup {
+  display: block !important;
+  width: 100% !important;
+  margin: 15px 0 6px !important;
+  padding: 0 4px !important;
+  text-align: left !important;
+}
+#featureDrawer nav#drawerLinks > button.drawerLink {
+  display: flex !important;
+  position: static !important;
+  float: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  margin: 2px 0 !important;
+  padding: 8px 10px !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 11px !important;
+  text-align: left !important;
+  transform: none !important;
+}
+#featureDrawer nav#drawerLinks > button.drawerLink .drawerIcon {
+  display: grid !important;
+  position: static !important;
+  float: none !important;
+  flex: 0 0 29px !important;
+  width: 29px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+#featureDrawer nav#drawerLinks > button.drawerLink > span:last-child {
+  display: block !important;
+  position: static !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  text-align: left !important;
+}
