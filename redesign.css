@@ -63,3 +63,23 @@ dialog[open]{position:fixed;inset:auto 0 0 0;margin:0;width:100%!important;max-w
 @keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 @media(prefers-reduced-motion:reduce){dialog[open]{animation:none}}
 @media print{#bnav,#fab,#segbar,.hdr{display:none}}
+/* Right-side expandable navigation drawer */
+#bnav{display:none!important}
+#featureMenuBtn{margin-left:2px}
+#featureShade{position:fixed;inset:0;background:rgba(19,20,45,.34);backdrop-filter:blur(2px);z-index:90;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
+#featureShade.open{opacity:1;visibility:visible}
+#featureDrawer{position:fixed;z-index:91;right:0;top:0;bottom:0;width:min(340px,88vw);background:#fbfbff;border-left:1px solid #e6e8f7;box-shadow:-18px 0 48px rgba(31,34,83,.16);transform:translateX(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));overflow:hidden}
+#featureDrawer.open{transform:translateX(0)}
+.drawerHead{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 16px;border-bottom:1px solid #ececf5}
+.drawerHead b{display:block;font-size:17px;color:#25264d}.drawerHead small{display:block;color:#9294ae;font-size:11px;margin-top:2px}
+#drawerClose{width:36px;height:36px;min-height:0;border:0;border-radius:12px;background:#f0f0fa;color:#565878;font-size:25px;line-height:1;padding:0}
+.drawerUser{margin:13px 2px 10px;padding:11px 12px;border-radius:13px;background:#f0f1fc;color:#555982;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#drawerLinks{overflow-y:auto;overscroll-behavior:contain;padding:2px 0 12px;flex:1}
+.drawerGroup{padding:15px 10px 6px;color:#9b9db5;font-size:10px;font-weight:750;letter-spacing:.12em}
+.drawerLink{width:100%;min-height:46px;display:flex;align-items:center;gap:12px;text-align:left;margin:2px 0;padding:8px 11px;border:0;border-radius:12px;background:transparent;color:#3f4167;font-size:13px;font-weight:500}
+.drawerLink:hover,.drawerLink:focus-visible{background:#eeeffb;color:#5055d4;outline:none}
+.drawerIcon{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#f0f1fb;color:#6669c9;font-size:17px;flex:none}
+.drawerFoot{padding:12px 8px 2px;border-top:1px solid #ececf5;color:#a2a3b8;font-size:10px;letter-spacing:.04em}
+body.drawer-open{overflow:hidden}
+@media(min-width:900px){#featureDrawer{width:360px}}
+@media(prefers-reduced-motion:reduce){#featureDrawer,#featureShade{transition:none}}
