@@ -89,5 +89,47 @@
     const n = (typeof TOOL_NOTIFICATIONS !== "undefined" ? TOOL_NOTIFICATIONS : []).filter(x => !x.readAt).length, b = $("bellN");
     b.textContent = n > 9 ? "9+" : n; b.style.display = n ? "" : "none"; title();
   }, 3000);
+  // Right-side feature drawer (ChatGPT-style navigation).
+  const drawerItems = [
+    {head:"WORKSPACE"},
+    {label:"Today",tab:"today",seg:"home",icon:"⌂"},
+    {label:"Calendar",tab:"plan",seg:"cal",icon:"▦"},
+    {label:"Schedule",tab:"plan",seg:"list",icon:"☷"},
+    {label:"Target dates",tab:"plan",seg:"targets",icon:"◷"},
+    {head:"FIELD WORK"},
+    {label:"Trip & live tracking",tab:"travel",seg:"trip",icon:"⌖"},
+    {label:"Travel history",tab:"travel",seg:"history",icon:"↗"},
+    {label:"Saved places",tab:"travel",seg:"places",icon:"⌖"},
+    {label:"Visit verification",tab:"travel",seg:"visits",icon:"✓"},
+    {label:"Travel cost claims",tab:"travel",seg:"claims",icon:"₹"},
+    {head:"PERFORMANCE"},
+    {label:"Programs",tab:"progress",seg:"prog",icon:"▥"},
+    {label:"Status",tab:"progress",seg:"status",icon:"◉"},
+    {label:"Detail",tab:"progress",seg:"detail",icon:"≡"},
+    {label:"Schools",tab:"progress",seg:"schools",icon:"⌂"},
+    {head:"INSIGHTS & TOOLS"},
+    {label:"Notifications inbox",tab:"hub",seg:"inbox",icon:"♧"},
+    {label:"Insights & analysis",tab:"hub",seg:"insights",icon:"⌁"},
+    {label:"Monthly reports",tab:"hub",seg:"reports",icon:"▤"},
+    {label:"Admin tools",tab:"hub",seg:"admin",icon:"⚙",admin:true}
+  ];
+  const shade = document.createElement("div"); shade.id = "featureShade";
+  const panel = document.createElement("aside"); panel.id = "featureDrawer"; panel.setAttribute("aria-label","Dashboard features");
+  panel.innerHTML = '<div class="drawerHead"><div><b>Third Eye</b><small>Workspace navigation</small></div><button type="button" id="drawerClose" aria-label="Close menu">×</button></div><div class="drawerUser" id="drawerUser"></div><nav id="drawerLinks"></nav><div class="drawerFoot">EIMCTA · Dashboard</div>';
+  function renderDrawer(){
+    const host = panel.querySelector("#drawerLinks");
+    host.innerHTML = drawerItems.filter(x => !x.admin || adm()).map(x => x.head ? '<div class="drawerGroup">'+x.head+'</div>' : '<button type="button" class="drawerLink" data-dtab="'+x.tab+'" data-dseg="'+x.seg+'"><span class="drawerIcon">'+x.icon+'</span><span>'+x.label+'</span></button>').join("");
+    const me = typeof ME !== "undefined" && ME ? (ME.name || ME.email || "Signed in") : "Your workspace";
+    panel.querySelector("#drawerUser").textContent = me;
+  }
+  function drawerOpen(){renderDrawer();shade.classList.add("open");panel.classList.add("open");document.body.classList.add("drawer-open");}
+  function drawerClose(){shade.classList.remove("open");panel.classList.remove("open");document.body.classList.remove("drawer-open");}
+  document.body.append(shade,panel);
+  const menuBtn = document.createElement("button"); menuBtn.type="button"; menuBtn.id="featureMenuBtn"; menuBtn.className="iconbtn"; menuBtn.setAttribute("aria-label","Open dashboard features"); menuBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+  q(".topbar").appendChild(menuBtn); menuBtn.addEventListener("click",drawerOpen);
+  shade.addEventListener("click",drawerClose); panel.querySelector("#drawerClose").addEventListener("click",drawerClose);
+  panel.addEventListener("click",e=>{const b=e.target.closest("[data-dtab]");if(!b)return;go(b.dataset.dtab,b.dataset.dseg);drawerClose();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")drawerClose();});
+  bn.style.display="none";
   const h = location.hash.slice(1); go(T[h] ? h : "today");
 })();
