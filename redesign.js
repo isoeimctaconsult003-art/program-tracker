@@ -1,5 +1,12 @@
 /* Third Eye redesign layer. Load AFTER the main <script>. It reuses every existing section, ID and function. */
 (function () {
+  // EIMCTA branded startup animation. Uses the company logo asset, never an eye illustration.
+  const splash = document.createElement("div"); splash.id = "eimctaSplash";
+  splash.innerHTML = '<div class="splashAura"></div><div class="splashMark"><img src="./logo.jpg" alt="EIMCTA company logo"></div><div class="splashName">EIMCTA</div><div class="splashProduct">THIRD EYE <span>·</span> OPERATIONS PLATFORM</div><div class="splashLine"><i></i></div>';
+  document.body.appendChild(splash);
+  const dismissSplash = () => { splash.classList.add("splashOut"); setTimeout(() => splash.remove(), 700); };
+  window.addEventListener("load", () => setTimeout(dismissSplash, 1450), {once:true});
+  setTimeout(dismissSplash, 2600);
   const ORIG = window.show, q = s => document.querySelector(s);
   const adm = () => typeof ME !== "undefined" && ME && ["admin", "branch_admin"].includes(ME.role);
   const tools = re => document.querySelectorAll("#tools section").forEach(s => { const h = s.querySelector("h2"); s.classList.toggle("hx", !(h && re.test(h.textContent))); });
@@ -115,7 +122,7 @@
   ];
   const shade = document.createElement("div"); shade.id = "featureShade";
   const panel = document.createElement("aside"); panel.id = "featureDrawer"; panel.setAttribute("aria-label","Dashboard features");
-  panel.innerHTML = '<div class="drawerHead"><div><b>Third Eye</b><small>Workspace navigation</small></div><button type="button" id="drawerClose" aria-label="Close menu">×</button></div><div class="drawerUser" id="drawerUser"></div><nav id="drawerLinks"></nav><div class="drawerFoot">EIMCTA · Dashboard</div>';
+  panel.innerHTML = '<div class="drawerHead"><div class="drawerBrand"><img src="./logo.jpg" alt="EIMCTA company logo"><div><b>Third Eye</b><small>by EIMCTA · Operations Suite</small></div></div><button type="button" id="drawerClose" aria-label="Close menu">×</button></div><div class="drawerUser" id="drawerUser"></div><nav id="drawerLinks"></nav><div class="drawerFoot">EIMCTA · Dashboard</div>';
   function renderDrawer(){
     const host = panel.querySelector("#drawerLinks");
     host.innerHTML = drawerItems.filter(x => !x.admin || adm()).map(x => x.head ? '<div class="drawerGroup">'+x.head+'</div>' : '<button type="button" class="drawerLink" data-dtab="'+x.tab+'" data-dseg="'+x.seg+'"><span class="drawerIcon">'+x.icon+'</span><span>'+x.label+'</span></button>').join("");
